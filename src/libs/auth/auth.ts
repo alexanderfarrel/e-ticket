@@ -5,7 +5,7 @@ import { verifyGoogleToken } from "@/app/components/hooks/verifyToken/verifyGoog
 import { loginWithGoogle } from "@/libs/firebase/service";
 
 export const authOption: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
   },
