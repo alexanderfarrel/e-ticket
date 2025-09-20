@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 export default async function verifyToken(token: string, admin: boolean) {
   const decode: { role: string } = jwt.verify(
     token,
-    process.env.NEXTAUTH_SECRET!
+    process.env.NEXT_PUBLIC_NEXTAUTH_SECRET!
   ) as { role: string };
 
   if (!decode) {
