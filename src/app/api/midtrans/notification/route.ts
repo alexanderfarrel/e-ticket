@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       payment_type,
     } = body;
     if (transaction_status === "expire") {
-      await fetch(`${process.env.DEFAULT_URL}/api/event`, {
+      await fetch(`${process.env.NEXT_PUBLIC_DEFAULT_URL}/api/event`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -108,8 +108,8 @@ export async function POST(req: NextRequest) {
             const transporter = nodemailer.createTransport({
               service: "gmail",
               auth: {
-                user: process.env.DEFAULT_EMAIL_USER_ADMIN,
-                pass: process.env.DEFAULT_EMAIL_PASSWORD_ADMIN,
+                user: process.env.NEXT_PUBLIC_DEFAULT_EMAIL_USER_ADMIN,
+                pass: process.env.NEXT_PUBLIC_DEFAULT_EMAIL_PASSWORD_ADMIN,
               },
             });
 
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
             const imageName = event?.src.slice(event?.src.lastIndexOf("/") + 1);
 
             const result = await transporter.sendMail({
-              from: process.env.DEFAULT_EMAIL_USER_ADMIN,
+              from: process.env.NEXT_PUBLIC_DEFAULT_EMAIL_USER_ADMIN,
               to: dataPayment[0].email,
               subject: "Ticket QR Code by Sma Negeri 1 Madiun",
               html: `
