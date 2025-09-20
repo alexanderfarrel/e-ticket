@@ -1,0 +1,31 @@
+"use client";
+import Image from "next/image";
+
+export default function Header() {
+  return (
+    <header className="flex justify-center items-center bg-linear-to-b from-cyan-500 from-20% to-blue-500 border-b-4 border-amber-500 pt-[4.4rem] md:pt-[3.4rem]">
+      <section className="flex flex-col md:flex-row justify-between items-center max-w-[900px] w-full px-10">
+        <div className="flex flex-col justify-center">
+          <h1 className="text-3xl font-bold text-white">SMA Negeri 1 Madiun</h1>
+          <h1 className="text-3xl font-bold text-orange-300">E-Ticket</h1>
+          <input
+            type="text"
+            placeholder="Cari Tiket"
+            className="bg-white outline-none p-2 py-1 rounded-lg mt-3"
+          />
+        </div>
+        <div className="">
+          <div className="flex justify-end">
+            <Image
+              src="/images/foto.webp"
+              alt=""
+              width={1000}
+              height={1000}
+              className="max-w-[300px]"
+            />
+          </div>
+        </div>
+      </section>
+    </header>
+  );
+}
