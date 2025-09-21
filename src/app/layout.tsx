@@ -5,7 +5,7 @@ import { ViewTransitions } from "next-view-transitions";
 import PageWrapper from "./components/layouts/transition/transition";
 import { getServerSession } from "next-auth";
 import Providers from "./components/layouts/Providers/Providers";
-import { authOption } from "@/libs/auth/auth";
+import { authOptions } from "./api/auth/[...nextauth]/route";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,7 +22,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOption);
+  const session = await getServerSession(authOptions);
   return (
     <ViewTransitions>
       <html lang="en">

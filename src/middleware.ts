@@ -12,6 +12,7 @@ export default withAuth(
     }
 
     if (req.nextUrl.pathname.startsWith("/auth/login")) {
+      console.log("jalan");
       if (token?.role === "admin") {
         return NextResponse.redirect(new URL("/admin", req.url));
       }
