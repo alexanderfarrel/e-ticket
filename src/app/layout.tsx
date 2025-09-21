@@ -5,7 +5,7 @@ import { ViewTransitions } from "next-view-transitions";
 import PageWrapper from "./components/layouts/transition/transition";
 import { getServerSession } from "next-auth";
 import Providers from "./components/layouts/Providers/Providers";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import { authOptions } from "@/libs/auth/auth";
 
 const inter = Inter({
   variable: "--font-inter",
