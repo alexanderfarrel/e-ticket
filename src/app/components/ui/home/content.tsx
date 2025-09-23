@@ -11,6 +11,8 @@ export default function Content({
   events: EventInterface[];
   hasError: boolean;
 }) {
+  console.log(events);
+  console.log(hasError);
   if (hasError) {
     return (
       <p className="text-red-500 text-center mt-5">Failed to fetch event</p>
