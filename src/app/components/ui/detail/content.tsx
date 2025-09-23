@@ -15,8 +15,8 @@ export default function Content({
   detailEvent: EventInterface;
   slug: string | null;
 }) {
-  const [name, setName] = useState<string>("CHIKO");
-  const [email, setEmail] = useState<string>("chikofarrel@gmail.com");
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [count, setCount] = useState<number>(1);
   useEffect(() => {
@@ -201,13 +201,16 @@ export default function Content({
           </div>
         </section>
       )}
-
-      <p
+      <div
         className="text-center mt-5 cursor-pointer"
-        onClick={() => navigator.clipboard.writeText("4811 1111 1111 1114")}
+        onClick={() => {
+          navigator.clipboard.writeText("4811 1111 1111 1114");
+          alert("Copied");
+        }}
       >
-        4811 1111 1111 1114
-      </p>
+        <p>By Mastercard : </p>
+        <p className="">4811 1111 1111 1114</p>
+      </div>
     </>
   );
 }

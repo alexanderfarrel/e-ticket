@@ -68,7 +68,7 @@ export default function Card({
           })
         }
         whileTap={{ scale: 0.95 }}
-        className="bg-blue-500 text-white rounded-lg py-1 mt-auto hover:bg-blue-600 transition-colors cursor-pointer outline-none text-sm"
+        className="bg-blue-500 text-white rounded-lg py-[6px] mt-auto hover:bg-blue-600 transition-colors cursor-pointer outline-none text-sm"
       >
         Lihat Detail
       </motion.button>
