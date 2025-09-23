@@ -1,5 +1,5 @@
 export async function FetchEvents() {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/event`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/event`, {
     next: { revalidate: 60 },
   });
   const data = await res.json();

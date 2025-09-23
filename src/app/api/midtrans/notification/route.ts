@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       payment_type,
     } = body;
     if (transaction_status === "expire") {
-      await fetch(`${process.env.NEXTAUTH_URL}/api/event`, {
+      await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/event`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
