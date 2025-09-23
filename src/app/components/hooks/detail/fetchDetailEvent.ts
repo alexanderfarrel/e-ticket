@@ -1,5 +1,5 @@
 export default async function FetchDetailEvent(id: string) {
-  const res = await fetch(`http://localhost:3000/api/event?id=${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_DEFAULT_URL}/api/event?id=${id}`, {
     cache: "no-store",
   });
   const data = await res.json();
