@@ -75,6 +75,7 @@ export default function Content({
       });
 
       const reqData = await res.json();
+      console.log(reqData);
       if (reqData.message === "Invalid username") {
         alert("Invalid username");
         setIsLoading(false);
@@ -91,7 +92,7 @@ export default function Content({
         mutate();
         return;
       }
-      window.snap.pay(reqData?.token?.token, {
+      window?.snap?.pay(reqData?.token?.token, {
         async onError() {
           await handleFail(newId);
           setIsLoading(false);

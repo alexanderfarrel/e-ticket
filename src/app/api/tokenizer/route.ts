@@ -12,13 +12,15 @@ const snap = new Midtrans.Snap({
 export async function POST(req: NextRequest) {
   try {
     const { id, productName, price, quantity, name, email } = await req.json();
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    const usernameRegex = /^[a-zA-Z0-9_ ]{3,50}$/;
     if (!usernameRegex.test(name)) {
       return NextResponse.json(
         { message: "Invalid username" },
         { status: 400 }
       );
     }
+
+    const trimName: string = name.trim();
 
     if (!validator.isEmail(email)) {
       return NextResponse.json({ message: "Invalid email" }, { status: 400 });
@@ -56,7 +58,7 @@ export async function POST(req: NextRequest) {
           },
         ],
         customer_details: {
-          first_name: name,
+          first_name: trimName,
           email: email,
         },
       };
@@ -65,7 +67,7 @@ export async function POST(req: NextRequest) {
       if (token.token) {
         await addData("payment_status", {
           status: "pending",
-          name,
+          name: trimName,
           email,
           order_id: id,
           event_id: eventId,
@@ -102,6 +104,7 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (err: unknown) {
+    console.log(err);
     if (err instanceof Error) {
       return NextResponse.json({ message: err.message }, { status: 500 });
     }
