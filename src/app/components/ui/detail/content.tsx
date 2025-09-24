@@ -75,7 +75,6 @@ export default function Content({
       });
 
       const reqData = await res.json();
-      console.log(reqData);
       if (reqData.message === "Invalid username") {
         alert("Invalid username");
         setIsLoading(false);
