@@ -19,6 +19,8 @@ export default function Content({
   const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [count, setCount] = useState<number>(1);
+  const [isNameErr, setIsNameErr] = useState<boolean>(false);
+  const [isEmailInfoOpen, setIsEmailInfoOpen] = useState<boolean>(false);
   useEffect(() => {
     const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
     const clientKey = process.env.MIDTRANS_CLIENT_KEY;
@@ -54,6 +56,7 @@ export default function Content({
       alert("Please fill in your name and email");
       return;
     }
+    setIsEmailInfoOpen(false);
     setIsLoading(true);
     try {
       const newId = `${slug}-${Date.now() + Math.random()}`;
@@ -76,6 +79,7 @@ export default function Content({
 
       const reqData = await res.json();
       if (reqData.message === "Invalid username") {
+        setIsNameErr(true);
         alert("Invalid username");
         setIsLoading(false);
         return;
@@ -167,16 +171,34 @@ export default function Content({
                   placeholder="Nama"
                   defaultValue={name}
                   required
-                  onChange={(e) => setName(e.target.value)}
+                  min={3}
+                  max={50}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setIsNameErr(false);
+                  }}
                 />
+                {isNameErr && (
+                  <p className="text-red-500 text-sm -mt-2 ml-2">
+                    Hanya boleh mengandung huruf & angka
+                  </p>
+                )}
                 <input
                   type="text"
                   className="w-full bg-white outline-none p-2 py-1 rounded-lg"
                   placeholder="Email"
                   required
                   defaultValue={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setIsEmailInfoOpen(true);
+                  }}
                 />
+                {isEmailInfoOpen && (
+                  <p className="text-orange-400 text-sm -mt-2 -mb-2 ml-2">
+                    Pastikan email yang kamu masukkan sesuai dan aktif!
+                  </p>
+                )}
               </div>
               <aside className="w-full rounded-lg flex justify-between items-center">
                 <div className="text-[14px]">
