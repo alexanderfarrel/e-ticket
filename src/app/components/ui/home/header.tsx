@@ -2,8 +2,8 @@
 
 export default function Header() {
   return (
-    <header className="flex justify-center items-center bg-linear-to-b from-cyan-500 from-20% to-blue-500 border-b-4 border-amber-500 pt-[4.4rem] md:pt-[3.4rem]">
-      <section className="flex flex-col md:flex-row justify-between items-center max-w-[900px] w-full px-10">
+    <header className="flex justify-center items-center bg-linear-to-b from-cyan-500 from-20% to-blue-500 border-b-4 border-amber-500 max-sm:pt-[4.4rem] pt-[3.4rem]">
+      <section className="flex max-sm:flex-col flex-row justify-between items-center max-w-[900px] w-full px-10">
         <div className="flex flex-col justify-center">
           <h1 className="text-3xl font-bold text-white">SMA Negeri 1 Madiun</h1>
           <h1 className="text-3xl font-bold text-orange-300">E-Ticket</h1>
