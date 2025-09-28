@@ -8,6 +8,7 @@ import { SessionInterface } from "../../interfaces/session";
 export default function AdminView() {
   const { data } = useSession();
   const session: SessionInterface = data as SessionInterface;
+
   return (
     <AdminLayout isFixHeight name={session?.user?.name}>
       <div className="h-[100dvh] w-full flex flex-col items-center">

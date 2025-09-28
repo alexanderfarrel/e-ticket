@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 
 export default function Header() {
   return (
@@ -16,8 +15,8 @@ export default function Header() {
         </div>
         <div className="">
           <div className="flex justify-end">
-            <Image
-              src="/images/foto.webp"
+            <img
+              src="https://sman1madiun.sch.id/wp-content/uploads/2024/10/logo-banner.png"
               alt=""
               width={1000}
               height={1000}

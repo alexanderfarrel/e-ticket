@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toIdr } from "../../utils/toIdr";
 import { EventInterface } from "../../interfaces/event";
 import useSWR from "swr";
+import { toast } from "sonner";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -15,10 +16,10 @@ export default function Content({
   detailEvent: EventInterface;
   slug: string | null;
 }) {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const [name, setName] = useState<string>("Alex");
+  const [email, setEmail] = useState<string>("chikofarrel@gmail.com");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [count, setCount] = useState<number>(1);
+  const [count, setCount] = useState<number>(3);
   const [isNameErr, setIsNameErr] = useState<boolean>(false);
   const [isEmailInfoOpen, setIsEmailInfoOpen] = useState<boolean>(false);
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function Content({
   const handleCheckout = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name || !email) {
-      alert("Please fill in your name and email");
+      toast.error("Please fill in your name and email");
       return;
     }
     setIsEmailInfoOpen(false);
@@ -80,17 +81,17 @@ export default function Content({
       const reqData = await res.json();
       if (reqData.message === "Invalid username") {
         setIsNameErr(true);
-        alert("Invalid username");
+        toast.error("Invalid username");
         setIsLoading(false);
         return;
       }
       if (reqData.message === "Invalid email") {
-        alert("Invalid email");
+        toast.error("Invalid email");
         setIsLoading(false);
         return;
       }
       if (reqData.message === "Ticket not enough") {
-        alert("Maaf Saat Ini Ticket Sudah Habis");
+        toast.info("Maaf Saat Ini Ticket Sudah Habis");
         setIsLoading(false);
         mutate();
         return;
@@ -109,9 +110,9 @@ export default function Content({
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        alert("Ups Terjadi Kesalahan");
+        toast.error("Ups Terjadi Kesalahan");
       } else {
-        alert("Ups Terjadi Kesalahan");
+        toast.error("Ups Terjadi Kesalahan");
       }
       setIsLoading(false);
     } finally {
@@ -128,7 +129,7 @@ export default function Content({
       body: JSON.stringify({
         order_id,
       }),
-    }).catch(() => alert("Ups Terjadi Kesalahan"));
+    }).catch(() => toast.error("Ups Terjadi Kesalahan"));
   };
 
   return (
@@ -146,13 +147,15 @@ export default function Content({
               />
             </div>
             {/* <h1 className="text-2xl font-bold">{slug}</h1> */}
-            <div className="flex justify-between font-bold mt-2">
+            <div className="flex justify-between font-bold mt-3 mb-2">
               <p className="">
                 Ticket : <span>{event?.ticket}</span>
               </p>
               <p className="font-medium">{toIdr(event?.price)}</p>
             </div>
-            <p>{event?.description}</p>
+            <p className="text-justify max-sm:text-base">
+              {event?.description}
+            </p>
             {count > event?.ticket && (
               <p className="mt-3 -mb-2 text-red-500">
                 Ticket Saat Ini Tidak Tersedia
@@ -227,7 +230,7 @@ export default function Content({
         className="text-center mt-5 cursor-pointer"
         onClick={() => {
           navigator.clipboard.writeText("4811 1111 1111 1114");
-          alert("Copied");
+          toast.success("Copied");
         }}
       >
         <p>By Mastercard : </p>

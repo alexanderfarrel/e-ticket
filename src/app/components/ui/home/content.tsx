@@ -18,7 +18,7 @@ export default function Content({
   }
   return (
     <section className="mt-7 w-full flex flex-col justify-center items-center">
-      <div className="max-w-[900px] w-full grid md:grid-cols-3 grid-cols-1 gap-4 px-5">
+      <div className="max-w-[900px] w-full grid md:grid-cols-1 grid-cols-1 gap-4 px-5">
         {/* {error ||
           (loading &&
             Array.from({ length: 6 }).map((_, index) => (

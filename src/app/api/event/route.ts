@@ -1,11 +1,9 @@
 import { PaymentStatusInterface } from "@/app/components/interfaces/paymentStatus";
+import { db } from "@/libs/firebase/admin";
 import {
-  addData,
-  deleteById,
   retrieveData,
-  retrieveDataByField,
+  retrieveDataByFieldAdmin,
   retrieveDataById,
-  updateData,
 } from "@/libs/firebase/service";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -22,7 +20,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const { order_id } = await req.json();
-    const dataPayment = (await retrieveDataByField(
+    const dataPayment = (await retrieveDataByFieldAdmin(
       "payment_status",
       "order_id",
       order_id
@@ -35,15 +33,17 @@ export async function PUT(req: NextRequest) {
     }
     const data = await retrieveDataById("event", dataPayment[0].event_id!);
     if (data) {
-      await updateData("event", dataPayment[0].event_id!, {
-        ticket: data.ticket + dataPayment[0].ticket,
-      });
+      await db
+        .collection("event")
+        .doc(dataPayment[0].event_id!)
+        .update({
+          ticket: data.ticket + dataPayment[0].ticket,
+        });
 
       try {
-        await deleteById("payment_status", dataPayment[0].id!);
+        await db.collection("payment_status").doc(dataPayment[0].id!).delete();
         return NextResponse.json({ message: "Success" }, { status: 200 });
       } catch (error: unknown) {
-        await addData("payment_status", dataPayment[0]);
         if (error instanceof Error) {
           return NextResponse.json({ message: error.message }, { status: 500 });
         }

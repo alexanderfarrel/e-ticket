@@ -16,6 +16,7 @@ import { EventInterface } from "@/app/components/interfaces/event";
 import { QrCodeInterface } from "@/app/components/interfaces/qrCode";
 import { PaymentStatusInterface } from "@/app/components/interfaces/paymentStatus";
 import { LoginGooglePropsInterface } from "@/app/components/interfaces/loginGoogleProps";
+import { db } from "./admin";
 
 const firestore = getFirestore(app);
 
@@ -47,6 +48,33 @@ export async function retrieveDataByField(
   }));
   return data;
 }
+
+// export async function retrieveDataQrCode(
+//   collectionName: string,
+//   value: string,
+//   isQrCodeArray: boolean = false
+// ) {
+//   const q = db.collection(collectionName);
+//   const snapshot = await q.get();
+
+//   let data = snapshot.docs.map(
+//     (doc) =>
+//       ({
+//         id: doc.id,
+//         ...doc.data(),
+//       } as QrCodeInterface)
+//   );
+
+//   if (isQrCodeArray) {
+//     data = data.filter((item) =>
+//       item.qr_code.some((obj: Record<string, string>) =>
+//         Object.values(obj).includes(value)
+//       )
+//     );
+//   }
+
+//   return data;
+// }
 
 export async function addData(
   collectionName: string,
@@ -116,7 +144,7 @@ export async function deleteById(collectionName: string, id: string) {
 }
 
 export async function loginWithGoogle(data: LoginGooglePropsInterface) {
-  const user: LoginGooglePropsInterface[] = (await retrieveDataByField(
+  const user: LoginGooglePropsInterface[] = (await retrieveDataByFieldAdmin(
     "users",
     "email",
     data.email
@@ -127,12 +155,42 @@ export async function loginWithGoogle(data: LoginGooglePropsInterface) {
     return { status: true, user: data };
   } else {
     data.role = "user";
-    const result: { status: boolean; statusCode: number; message: string } =
-      await addData("users", data);
-    if (result.status) {
-      return { status: true, user: data };
-    } else {
-      return { status: false, message: "failed to add data" };
+    const id = await db
+      .collection("users")
+      .add(data)
+      .then((docRef) => {
+        return docRef.id;
+      });
+    const user = { id, email: data.email, role: "user" };
+    return { status: true, user };
+  }
+}
+
+// admin ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+export async function retrieveDataByFieldAdmin(
+  collectionName: string,
+  field: string,
+  value: string
+) {
+  try {
+    const snap = await db
+      .collection(collectionName)
+      .where(field, "==", value)
+      .get();
+
+    if (snap.empty) {
+      return [];
     }
+
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new Error(`Failed to retrieve data: ${err.message}`);
+    }
+    throw new Error(`Failed to retrieve data`);
   }
 }

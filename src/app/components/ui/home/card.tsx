@@ -61,7 +61,7 @@ export default function Card({
         {dateConvert}
       </p>
       <motion.button
-        whileHover={{ scale: 1.05 }}
+        whileHover={{ scale: 1.02 }}
         onClick={() =>
           router.push(`detail/${id}`, {
             onTransitionReady: PageAnimation,

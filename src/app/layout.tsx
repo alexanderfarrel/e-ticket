@@ -6,6 +6,7 @@ import PageWrapper from "./components/layouts/transition/transition";
 import { getServerSession } from "next-auth";
 import Providers from "./components/layouts/Providers/Providers";
 import { authOptions } from "@/libs/auth/auth";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,6 +28,7 @@ export default async function RootLayout({
     <ViewTransitions>
       <html lang="en">
         <body className={`${inter.variable}`}>
+          <Toaster richColors position="top-center" />
           <Providers session={session}>
             <PageWrapper>{children}</PageWrapper>
           </Providers>

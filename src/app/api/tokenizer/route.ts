@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Midtrans from "midtrans-client";
-import { addData, retrieveDataById, updateData } from "@/libs/firebase/service";
 import validator from "validator";
+import { db } from "@/libs/firebase/admin";
 
 const snap = new Midtrans.Snap({
   isProduction: false,
@@ -27,7 +27,11 @@ export async function POST(req: NextRequest) {
     }
 
     const eventId = id.split("-")[0];
-    const eventData = await retrieveDataById("event", eventId);
+    const eventData = await db
+      .collection("event")
+      .doc(eventId)
+      .get()
+      .then((doc) => doc.data());
 
     if (!eventData) {
       return NextResponse.json({ message: "Event not found" }, { status: 404 });
@@ -41,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     const newTicket = eventData.ticket - quantity;
-    await updateData("event", eventId, {
+    await db.collection("event").doc(eventId).update({
       ticket: newTicket,
     });
     try {
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
 
       const token = await snap.createTransaction(parameter);
       if (token.token) {
-        await addData("payment_status", {
+        await db.collection("payment_status").add({
           status: "pending",
           name: trimName,
           email,
@@ -78,7 +82,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ token }, { status: 200 });
     } catch (err: unknown) {
-      await updateData("event", eventId, {
+      await db.collection("event").doc(eventId).update({
         ticket: eventData.ticket,
       });
       if (typeof err === "object" && err !== null && "ApiResponse" in err) {
