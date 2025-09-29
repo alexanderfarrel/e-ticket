@@ -16,8 +16,8 @@ export default function Content({
   detailEvent: EventInterface;
   slug: string | null;
 }) {
-  const [name, setName] = useState<string>("Alex");
-  const [email, setEmail] = useState<string>("chikofarrel@gmail.com");
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [count, setCount] = useState<number>(3);
   const [isNameErr, setIsNameErr] = useState<boolean>(false);
