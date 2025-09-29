@@ -93,7 +93,7 @@ export default function Navbar({
               </button>
             </div>
           ) : (
-            <h1>E-Tickets</h1>
+            <h1 className="font-semibold">BHIMACREW</h1>
           )}
         </div>
       </div>

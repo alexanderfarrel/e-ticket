@@ -228,7 +228,7 @@ export default function Content({
           </div>
         </section>
       )}
-      <div
+      {/* <div
         className="text-center mt-5 cursor-pointer"
         onClick={() => {
           navigator.clipboard.writeText("4811 1111 1111 1114");
@@ -237,7 +237,7 @@ export default function Content({
       >
         <p>By Mastercard : </p>
         <p className="">4811 1111 1111 1114</p>
-      </div>
+      </div> */}
     </>
   );
 }
