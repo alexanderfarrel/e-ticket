@@ -1,8 +1,9 @@
-import { NextAuthOptions } from "next-auth";
+import { Account, NextAuthOptions, Profile, Session } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import jwt from "jsonwebtoken";
 import { verifyGoogleToken } from "@/app/components/hooks/verifyToken/verifyGoogleToken";
 import { loginWithGoogle } from "@/libs/firebase/service";
+import { JWT } from "next-auth/jwt";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -22,24 +23,32 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account, profile }: any) {
+    async jwt({
+      token,
+      account,
+      profile,
+    }: {
+      token: JWT;
+      account?: Account | null;
+      profile?: Profile;
+    }) {
       if (account?.provider === "google") {
-        await verifyGoogleToken(account.access_token);
+        await verifyGoogleToken(account.access_token!);
         const data = {
-          email: profile.email,
-          name: profile.name,
+          email: profile?.email ?? "",
+          name: profile?.name ?? "",
           type: "GOOGLE",
         };
         const result = await loginWithGoogle(data);
         if (result.status && result.user) {
-          token.id = result.user.id;
+          token.id = result.user.id!;
           token.email = result.user.email;
           token.role = result.user.role;
         }
       }
       return token;
     },
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if ("id" in token) {
         session.user.id = token.id;
       }

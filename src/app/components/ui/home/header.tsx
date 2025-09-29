@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 export default function Header() {
   return (
     <header className="flex justify-center items-center bg-linear-to-b from-cyan-500 from-20% to-blue-500 border-b-4 border-amber-500 max-sm:pt-[4.4rem] pt-[3.4rem]">
@@ -15,7 +17,7 @@ export default function Header() {
         </div>
         <div className="">
           <div className="flex justify-end">
-            <img
+            <Image
               src="https://sman1madiun.sch.id/wp-content/uploads/2024/10/logo-banner.png"
               alt=""
               width={1000}
