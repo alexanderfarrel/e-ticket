@@ -19,7 +19,7 @@ export default function Content({
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [count, setCount] = useState<number>(3);
+  const [count, setCount] = useState<number>(1);
   const [isNameErr, setIsNameErr] = useState<boolean>(false);
   const [isEmailInfoOpen, setIsEmailInfoOpen] = useState<boolean>(false);
   useEffect(() => {
