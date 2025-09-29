@@ -38,10 +38,10 @@ export default function Card({
           </div>
         )}
         <Image
-          src={src}
+          src={"/images/bhima_night_carnival.png"}
           alt=""
           className=""
-          objectFit="cover"
+          objectFit="contain"
           objectPosition="center"
           layout="fill"
         />

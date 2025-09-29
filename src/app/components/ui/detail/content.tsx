@@ -139,11 +139,13 @@ export default function Content({
           <div className="max-w-[900px] w-full">
             <div className="overflow-hidden rounded-lg w-full select-none aspect-video border">
               <Image
-                src={event?.src}
+                src={"/images/bhima_night_carnival.png"}
                 alt=""
                 width={1000}
                 height={1000}
-                className="w-full h-full object-cover"
+                objectFit="contain"
+                objectPosition="center"
+                className="w-full h-full"
               />
             </div>
             {/* <h1 className="text-2xl font-bold">{slug}</h1> */}
