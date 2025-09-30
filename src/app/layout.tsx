@@ -14,8 +14,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "E-Ticket",
-  description: "E-Ticket by Sma Negeri 1 Madiun",
+  title: "Bhimacrew",
+  description: "E-Ticket by Bhimacrew",
+  icons: {
+    icon: "/images/smasa.ico",
+  },
 };
 
 export default async function RootLayout({

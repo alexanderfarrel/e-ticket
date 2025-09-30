@@ -51,10 +51,20 @@ export default function Content({
     );
   }
 
+  const handleCheckoutInvalid = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!name || !email) {
+      toast.error("Mohon isi nama dan email");
+      return;
+    }
+
+    return toast.info("Maaf Saat ini pembayaran belum tersedia ");
+  };
+
   const handleCheckout = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name || !email) {
-      toast.error("Please fill in your name and email");
+      toast.error("Mohon isi nama dan email");
       return;
     }
     setIsEmailInfoOpen(false);
@@ -135,44 +145,101 @@ export default function Content({
   return (
     <>
       {event && (
-        <section className="mt-8 w-full flex flex-col items-center px-5">
-          <div className="max-w-[900px] w-full">
-            <div className="overflow-hidden rounded-lg w-full select-none aspect-video border">
+        <main className="bg-[#0b0105] backdrop-blur-2xl flex flex-col gap-40 mx-auto select-none">
+          <section className="h-full w-full bg-[#770b4d] relative mx-auto z-0">
+            <Image
+              src={"/images/bnc_2025/tree_(right).webp"}
+              alt="tree"
+              width={1000}
+              height={1000}
+              className="absolute right-0 top-[-12%] w-[38%] h-auto z-10"
+            ></Image>
+            <div className="w-full min-h-full flex justify-center items-center relative">
               <Image
-                src={"/images/bhima_night_carnival.png"}
-                alt=""
+                src={"/images/bnc_2025/stars_falling.webp"}
+                alt="stars_failling"
+                width={500}
+                height={500}
+                className="absolute left-[4%] top-[3%] w-[40%] h-auto z-[0]"
+              />
+
+              <Image
+                src={"/images/bnc_2025/sky_haze.webp"}
+                alt="sky haze"
+                width={500}
+                height={500}
+                className="absolute top-[10%] w-full h-auto z-[-1]"
+              />
+              <Image
+                src={"/images/bnc_2025/sky_haze_bottom.webp"}
+                alt="sky haze bottom"
+                width={500}
+                height={500}
+                className="absolute top-[58%] w-full h-auto z-[-1]"
+              />
+
+              <Image
+                src={"/images/bnc_2025/the_moon.webp"}
+                alt="moon"
                 width={1000}
                 height={1000}
-                objectFit="contain"
-                objectPosition="center"
-                className="w-full h-full"
+                className="w-full h-auto z-[1] blur-[2px]"
               />
-            </div>
-            {/* <h1 className="text-2xl font-bold">{slug}</h1> */}
-            <div className="flex justify-between font-bold mt-3 mb-2">
-              <p className="">
-                Ticket : <span>{event?.ticket}</span>
-              </p>
-              <p className="font-medium">{toIdr(event?.price)}</p>
-            </div>
-            <p className="text-justify max-sm:text-base">
-              {event?.description}
-            </p>
-            {count > event?.ticket && (
-              <p className="mt-3 -mb-2 text-red-500">
-                Ticket Saat Ini Tidak Tersedia
-              </p>
-            )}
 
+              <Image
+                src={"/images/bnc_2025/bhima_night_carnival.webp"}
+                alt="bnc"
+                width={1000}
+                height={1000}
+                className="absolute left-1/2 top-[30%] -translate-x-1/2
+               w-[60%] max-w-[800px] h-auto z-[2]"
+              />
+
+              <Image
+                src={"/images/bnc_2025/hills.webp"}
+                alt="hills"
+                width={1000}
+                height={1000}
+                className="w-full h-auto absolute left-0 top-full -translate-y-[60%] z-[3]"
+              />
+              <section className="w-full h-auto absolute left-0 top-full -translate-y-[25%] z-[4]">
+                <div className="w-full h-full overflow-hidden">
+                  <Image
+                    src={"/images/bnc_2025/forrest.webp"}
+                    alt="forrest"
+                    width={1000}
+                    height={1000}
+                    className="w-full h-auto"
+                  />
+                </div>
+                <Image
+                  src={"/images/bnc_2025/haze.webp"}
+                  alt="haze"
+                  width={1000}
+                  height={1000}
+                  className="absolute top-1/7 left-0 w-full h-auto"
+                />
+              </section>
+            </div>
+          </section>
+          {/* <section className="w-full h-[150dvw] bg-[#0b0105]"></section> */}
+          <section className="w-full bg-[#0b0105] px-7 flex flex-col gap-3 -mt-32">
+            <div className="p-3 bg-transparent rounded-xl max-w-3xl mx-auto z-10 text-justify relative">
+              <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
+              <p className="text-white sm:text-2xl sm:leading-[32px] z-0">
+                {detailEvent.description}
+              </p>
+            </div>
             <form
               action=""
-              onSubmit={(e) => handleCheckout(e)}
-              className="bg-[#eee] flex flex-col p-3 mt-4 gap-5 rounded-lg"
+              onSubmit={(e) => handleCheckoutInvalid(e)}
+              className="bg-transparent relative flex flex-col p-4 gap-5 rounded-xl mx-auto w-full max-w-3xl z-10"
             >
+              <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
               <div className="flex flex-col gap-3">
                 <input
                   type="text"
-                  className="w-full bg-white outline-none p-2 py-1 rounded-lg"
+                  className="w-full bg-[#9a4875] text-white outline-none p-2 py-1 rounded-lg sm:text-xl text-base"
                   placeholder="Nama"
                   defaultValue={name}
                   required
@@ -190,7 +257,7 @@ export default function Content({
                 )}
                 <input
                   type="text"
-                  className="w-full bg-white outline-none p-2 py-1 rounded-lg"
+                  className="w-full bg-[#9a4875] text-white outline-none p-2 py-1 rounded-lg sm:text-xl text-base"
                   placeholder="Email"
                   required
                   defaultValue={email}
@@ -206,38 +273,28 @@ export default function Content({
                 )}
               </div>
               <aside className="w-full rounded-lg flex justify-between items-center">
-                <div className="text-[14px]">
-                  <Counter
-                    maxCount={event?.ticket}
-                    count={count}
-                    setCount={setCount}
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <p>{toIdr(event?.price * count)}</p>
+                <Counter
+                  maxCount={event?.ticket}
+                  count={count}
+                  setCount={setCount}
+                />
+                <div className="flex gap-2 sm:gap-5 items-center">
+                  <p className="text-white sm:text-xl">
+                    {toIdr(event?.price * count)}
+                  </p>
                   <button
                     disabled={count > event?.ticket || isLoading}
                     type="submit"
-                    className="bg-blue-500 px-4 py-1 rounded-lg text-white cursor-pointer hover:bg-blue-600 transition-all disabled:bg-blue-500/70 disabled:cursor-not-allowed"
+                    className="bg-[#873567] px-4 py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-blue-500/70 disabled:cursor-not-allowed sm:text-xl"
                   >
                     Beli Tiket
                   </button>
                 </div>
               </aside>
             </form>
-          </div>
-        </section>
+          </section>
+        </main>
       )}
-      {/* <div
-        className="text-center mt-5 cursor-pointer"
-        onClick={() => {
-          navigator.clipboard.writeText("4811 1111 1111 1114");
-          toast.success("Copied");
-        }}
-      >
-        <p>By Mastercard : </p>
-        <p className="">4811 1111 1111 1114</p>
-      </div> */}
     </>
   );
 }

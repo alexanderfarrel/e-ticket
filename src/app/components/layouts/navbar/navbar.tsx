@@ -35,7 +35,7 @@ export default function Navbar({
   if (!mounted) return null;
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 h-[3.5rem] transition-all duration-500 z-50 ${
+      className={`fixed top-0 left-0 right-0 h-[3.5rem] transition-all duration-500 z-[999] ${
         scrollY > 0 ? "shadow-xl backdrop-blur-sm" : "shadow-none"
       } ${isFixHeight && "shadow-xl backdrop-blur-sm"} bg-linear-to-b`}
     >
@@ -93,7 +93,9 @@ export default function Navbar({
               </button>
             </div>
           ) : (
-            <h1 className="font-semibold">BHIMACREW</h1>
+            <h1 className="font-bold text-base tracking-wider text-yellow-500 font-logo">
+              BHIMACREW
+            </h1>
           )}
         </div>
       </div>

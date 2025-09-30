@@ -19,43 +19,71 @@ export default function Header({
     .join(":");
 
   return (
-    <header className="relative flex justify-center items-center bg-linear-to-b from-cyan-500 from-20% to-blue-500 border-b-4 border-amber-500 pt-[4rem] pb-8">
-      <section className="flex flex-col items-center max-w-[900px] w-full px-10 text-center">
-        <h1 className="text-4xl font-bold text-white max-sm:text-3xl mt-1">
+    <header className="relative bg-linear-to-t from-[#18893c] from-20% to-[#8ee822] border-b-4 border-[#ffb64d] z-[1]">
+      <section className="flex flex-col items-center w-full text-center min-h-[180px] mx-auto">
+        <main className="w-full flex">
+          <div className="relative w-full h-[300px] overflow-hidden max-md:hidden">
+            <Image
+              src="/images/bnc_2025/gambar2.webp"
+              alt="gambar1"
+              fill
+              className="object-cover object-center"
+            />
+          </div>
+
+          <div className="relative w-full h-[300px] overflow-hidden">
+            <Image
+              src="/images/bnc_2025/gambar1.webp"
+              alt="gambar2"
+              fill
+              className="object-cover object-center"
+            />
+          </div>
+
+          <div className="relative w-full h-[300px] overflow-hidden max-lg:hidden">
+            <Image
+              src="/images/bnc_2025/gambar3.webp"
+              alt="gambar3"
+              fill
+              className="object-cover object-center"
+            />
+          </div>
+        </main>
+        {/* <h1 className="text-4xl font-bold text-white max-sm:text-3xl mt-1">
           {title}
         </h1>
         <p className="text-xl font-light text-white mt-1 max-sm:text-lg">
           {sub_title}
-        </p>
+        </p> */}
 
-        <div className="absolute bottom-0 translate-y-1/2 mx-auto bg-white flex gap-4 p-2 rounded-lg shadow-xl max-sm:text-sm">
-          <h1 className="flex gap-1 items-center">
+        <div className="absolute bottom-0 translate-y-1/2 mx-auto border-2 border-[#ffb64d] bg-[#770b4d] text-white flex gap-4 p-2 rounded-lg shadow-xl max-sm:text-sm">
+          <h1 className="flex gap-1 sm:gap-2 items-center sm:text-xl">
             <Image
               src="/icons/redLocation.webp"
               alt="pin"
               width={100}
               height={100}
-              className="max-w-[17px] max-h-[17px] w-full"
+              className="max-w-[17px] max-h-[17px] w-full sm:max-w-[20px] sm:max-h-[20px]"
             />
             <span>{location}</span>
           </h1>
-          <h1 className="flex gap-1 items-center">
+          <h1 className="flex gap-1 sm:gap-2 items-center sm:text-xl">
             <Image
               src="/icons/calendar.png"
               alt="pin"
               width={100}
               height={100}
-              className="max-w-[19px] max-h-[19px] w-full"
+              className="max-w-[19px] max-h-[19px] w-full sm:max-w-[21px] sm:max-h-[21px]"
             />
             <span>{dateConvert}</span>
           </h1>
-          <h1 className="flex gap-1 items-center">
+          <h1 className="flex gap-1 sm:gap-2 items-center sm:text-xl">
             <Image
               src="/icons/clock.png"
               alt="pin"
               width={100}
               height={100}
-              className="max-w-[20px] max-h-[20px] w-full"
+              className="max-w-[20px] max-h-[20px] w-full sm:max-w-[22px] sm:max-h-[22px]"
             />
             <span>{timeConvert}</span>
           </h1>

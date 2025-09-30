@@ -15,10 +15,10 @@ export default function Counter({
   };
   return (
     <>
-      <div className="flex bg-gray-300 rounded-md text-[17px] w-[5rem] items-center">
+      <div className="flex bg-[#873567] text-white rounded-md text-[17px] w-[5rem] items-center sm:text-xl">
         <button
           type="button"
-          className="w-full cursor-pointer"
+          className="w-full cursor-pointer "
           onClick={handleDown}
         >
           -

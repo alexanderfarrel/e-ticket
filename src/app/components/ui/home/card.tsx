@@ -38,7 +38,7 @@ export default function Card({
           </div>
         )}
         <Image
-          src={"/images/bhima_night_carnival.png"}
+          src={"/images/bnc_2025/bhima_night_carnival.webp"}
           alt=""
           className=""
           objectFit="contain"
