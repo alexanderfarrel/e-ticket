@@ -27,7 +27,12 @@ export default function Card({
   return (
     <motion.div
       key={keyId}
-      className="rounded-lg bg-[#eee] p-3 flex flex-col gap-2 justify-center"
+      className="rounded-lg bg-[#eee] p-3 flex flex-col gap-2 justify-center cursor-pointer"
+      onClick={() =>
+        router.push(`detail/${id}`, {
+          onTransitionReady: PageAnimation,
+        })
+      }
     >
       <div className="overflow-hidden rounded-lg w-full mx-auto relative aspect-[4/3]">
         {ticket === 0 && (
@@ -38,12 +43,12 @@ export default function Card({
           </div>
         )}
         <Image
-          src={"/images/bnc_2025/bhima_night_carnival.webp"}
+          src={"/images/bnc_2025/thumb.webp"}
           alt=""
           className=""
-          objectFit="contain"
+          objectFit="cover"
           objectPosition="center"
-          layout="fill"
+          fill
         />
       </div>
       <div className="flex justify-between items-center -mb-1">

@@ -49,33 +49,6 @@ export async function retrieveDataByField(
   return data;
 }
 
-// export async function retrieveDataQrCode(
-//   collectionName: string,
-//   value: string,
-//   isQrCodeArray: boolean = false
-// ) {
-//   const q = db.collection(collectionName);
-//   const snapshot = await q.get();
-
-//   let data = snapshot.docs.map(
-//     (doc) =>
-//       ({
-//         id: doc.id,
-//         ...doc.data(),
-//       } as QrCodeInterface)
-//   );
-
-//   if (isQrCodeArray) {
-//     data = data.filter((item) =>
-//       item.qr_code.some((obj: Record<string, string>) =>
-//         Object.values(obj).includes(value)
-//       )
-//     );
-//   }
-
-//   return data;
-// }
-
 export async function addData(
   collectionName: string,
   data:

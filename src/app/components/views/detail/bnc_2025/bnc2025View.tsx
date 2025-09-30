@@ -30,7 +30,7 @@ export default function Bnc2025View({
             location={detailEvent.location}
           />
           <Content detailEvent={detailEvent} slug={slug} />
-          <footer className="py-3 text-center bg-[#0b0105] text-white z-50">
+          <footer className="py-3 pt-8 text-center bg-[#0b0105] text-white z-50">
             All rights reserved
           </footer>
         </>

@@ -10,6 +10,12 @@
   font-style: normal;
 }
 
+.tes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 @theme {
   --breakpoint-xsm: 450px;
   --font-logo: "ClimateCrisis", sans-serif;

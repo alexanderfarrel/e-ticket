@@ -30,7 +30,7 @@ export default async function RootLayout({
   return (
     <ViewTransitions>
       <html lang="en">
-        <body className={`${inter.variable}`}>
+        <body className={`${inter.variable} bg-black`}>
           <Toaster richColors position="top-center" />
           <Providers session={session}>
             <PageWrapper>{children}</PageWrapper>

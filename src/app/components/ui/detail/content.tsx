@@ -145,8 +145,8 @@ export default function Content({
   return (
     <>
       {event && (
-        <main className="bg-[#0b0105] backdrop-blur-2xl flex flex-col gap-40 mx-auto select-none">
-          <section className="h-full w-full bg-[#770b4d] relative mx-auto z-0">
+        <main className="bg-[#0b0105] backdrop-blur-2xl flex flex-col mx-auto select-none">
+          <section className="h-full w-full bg-[#770b4d] relative mx-auto">
             <Image
               src={"/images/bnc_2025/tree_(right).webp"}
               alt="tree"
@@ -168,14 +168,14 @@ export default function Content({
                 alt="sky haze"
                 width={500}
                 height={500}
-                className="absolute top-[10%] w-full h-auto z-[-1]"
+                className="absolute top-[10%] w-full h-auto z-[0]"
               />
               <Image
                 src={"/images/bnc_2025/sky_haze_bottom.webp"}
                 alt="sky haze bottom"
                 width={500}
                 height={500}
-                className="absolute top-[58%] w-full h-auto z-[-1]"
+                className="absolute top-[58%] w-full h-auto z-[0]"
               />
 
               <Image
@@ -195,14 +195,14 @@ export default function Content({
                w-[60%] max-w-[800px] h-auto z-[2]"
               />
 
-              <Image
+              {/* <Image
                 src={"/images/bnc_2025/hills.webp"}
                 alt="hills"
                 width={1000}
                 height={1000}
                 className="w-full h-auto absolute left-0 top-full -translate-y-[60%] z-[3]"
               />
-              <section className="w-full h-auto absolute left-0 top-full -translate-y-[25%] z-[4]">
+              <section className="w-full h-auto absolute left-0 top-full -translate-y-[25%] z-[4] overflow-hidden">
                 <div className="w-full h-full overflow-hidden">
                   <Image
                     src={"/images/bnc_2025/forrest.webp"}
@@ -219,20 +219,46 @@ export default function Content({
                   height={1000}
                   className="absolute top-1/7 left-0 w-full h-auto"
                 />
-              </section>
+              </section> */}
             </div>
           </section>
           {/* <section className="w-full h-[150dvw] bg-[#0b0105]"></section> */}
-          <section className="w-full bg-[#0b0105] px-7 flex flex-col gap-3 -mt-32">
-            <div className="p-3 bg-transparent rounded-xl max-w-3xl mx-auto z-10 text-justify relative">
+          <section className="w-full bg-[#0b0105] px-7 flex flex-col gap-3 relative z-50">
+            <Image
+              src={"/images/bnc_2025/hills.webp"}
+              alt="hills"
+              width={1000}
+              height={1000}
+              className="w-full h-auto absolute left-0 top-0 -translate-y-[60%] z-[3]"
+            />
+            <section className="w-full absolute left-0 top-0 -translate-y-[25%] z-[4] overflow-hidden">
+              <div className="w-full relative h-auto overflow-hidden">
+                <Image
+                  src={"/images/bnc_2025/forrest.webp"}
+                  alt="forrest"
+                  width={1000}
+                  height={1000}
+                  className="w-full h-auto object-cover object-center"
+                />
+              </div>
+              <Image
+                src={"/images/bnc_2025/haze.webp"}
+                alt="haze"
+                width={1000}
+                height={1000}
+                className="absolute top-1/7 left-0 w-full h-auto"
+              />
+            </section>
+
+            <div className="p-3 bg-transparent rounded-xl max-w-3xl mx-auto text-justify relative z-[10] mt-52 border">
               <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
-              <p className="text-white sm:text-2xl sm:leading-[32px] z-0">
+              <p className="text-white sm:text-2xl sm:leading-[32px]">
                 {detailEvent.description}
               </p>
             </div>
             <form
               action=""
-              onSubmit={(e) => handleCheckoutInvalid(e)}
+              onSubmit={(e) => handleCheckout(e)}
               className="bg-transparent relative flex flex-col p-4 gap-5 rounded-xl mx-auto w-full max-w-3xl z-10"
             >
               <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
@@ -285,7 +311,7 @@ export default function Content({
                   <button
                     disabled={count > event?.ticket || isLoading}
                     type="submit"
-                    className="bg-[#873567] px-4 py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-blue-500/70 disabled:cursor-not-allowed sm:text-xl"
+                    className="bg-[#873567] px-4 py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed sm:text-xl"
                   >
                     Beli Tiket
                   </button>

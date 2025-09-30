@@ -22,42 +22,13 @@ function generateCode(length: number = 20): string {
   return result;
 }
 
-// export async function generateMultipleCodes(
-//   totalCodes: number
-// ): Promise<string[]> {
-//   const generated: string[] = [];
-//   const maxAttempts = totalCodes * 10; // dinamis sesuai jumlah permintaan
-//   let attempts = 0;
-
-//   while (generated.length < totalCodes && attempts < maxAttempts) {
-//     attempts++;
-
-//     const code = generateCode();
-//     const dataCode = await retrieveDataByFieldAdmin(
-//       "qr_detail",
-//       "qr_code",
-//       code
-//     );
-
-//     if (dataCode.length === 0 && !generated.includes(code)) {
-//       generated.push(code);
-//     }
-//   }
-
-//   if (generated.length < totalCodes) {
-//     throw new Error(
-//       `Failed to generate enough unique codes. Got ${generated.length} out of ${totalCodes}`
-//     );
-//   }
-
-//   return generated;
-// }
-
-// function formatCodes(codes: string[]): Record<number, string>[] {
-//   return codes.map((code, index) => ({
-//     [index + 1]: code,
-//   }));
-// }
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.DEFAULT_EMAIL_USER_ADMIN,
+    pass: process.env.DEFAULT_EMAIL_PASSWORD_ADMIN,
+  },
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -96,20 +67,6 @@ export async function POST(req: NextRequest) {
         await db.collection("payment_status").doc(dataPayment[0].id!).delete();
 
         try {
-          // const codes = await generateMultipleCodes(dataPayment[0].ticket);
-          // const formattedCodes = formatCodes(codes);
-          // const isScanned = formattedCodes.map((codeObj) => {
-          //   const key = Object.keys(codeObj)[0];
-          //   return { [key]: false };
-          // });
-          // const scanned_at = formattedCodes.map((codeObj) => {
-          //   const key = Object.keys(codeObj)[0];
-          //   return { [key]: "-" };
-          // });
-          // const action = formattedCodes.map((codeObj) => {
-          //   const key = Object.keys(codeObj)[0];
-          //   return { [key]: "First Scan" };
-          // });
           const qrCodes: string[] = [];
           const totalTickets = dataPayment[0].ticket;
 
@@ -169,14 +126,6 @@ export async function POST(req: NextRequest) {
               });
               qrImages.push(qrImage);
             }
-
-            const transporter = nodemailer.createTransport({
-              service: "gmail",
-              auth: {
-                user: process.env.DEFAULT_EMAIL_USER_ADMIN,
-                pass: process.env.DEFAULT_EMAIL_PASSWORD_ADMIN,
-              },
-            });
 
             const dateConvert = toDate(event?.timestamp)
               .toLocaleDateString("id-ID")
@@ -435,7 +384,7 @@ ${qrHtml}
 
 <tr><td align="center">
 <table class="t217" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="500" class="t216" style="width:600px;">
-<table class="t215" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t214" style="padding:0 0 3px 0;"><p class="t213" style="margin:0;Margin:0;font-family:Albert Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:italic;font-size:16px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#333333;text-align:center;mso-line-height-rule:exactly;mso-text-raise:2px;">Salam Hangat, Panitia Event</p></td></tr></table>
+<table class="t215" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t214" style="padding:0 0 3px 0;"><p class="t213" style="margin:0;Margin:0;font-family:Albert Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:italic;font-size:16px;text-decoration:none;text-transform:none;letter-spacing:-0.56px;direction:ltr;color:#333333;text-align:center;mso-line-height-rule:exactly;mso-text-raise:2px;">QR Code hanya bisa di scan sekali! Silahkan konfirmasi ke panitia jika ingin keluar dan masuk lagi ke event tersebut</p></td></tr></table>
 </td></tr></table>
 </td></tr></table></td></tr></table>
 </td></tr></table>
@@ -476,7 +425,13 @@ ${qrHtml}
               attachments: [
                 {
                   filename: imageName,
-                  path: path.join(process.cwd(), "public", "images", imageName),
+                  path: path.join(
+                    process.cwd(),
+                    "public",
+                    "images",
+                    "bnc_2025",
+                    imageName
+                  ),
                   cid: "banner",
                 },
                 ...qrImages.map((qrImage, index) => ({
@@ -503,12 +458,108 @@ ${qrHtml}
           } catch {
             dataPayment[0].status = "failed";
             await db.collection("payment_status").add(dataPayment[0]);
+            await transporter.sendMail({
+              from: process.env.DEFAULT_EMAIL_USER_ADMIN,
+              to: dataPayment[0].email,
+              subject: "Failed Sending Email | Payment ~ Smasa E-Ticket",
+              html: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p style="font-weight: bold; font-size: 20px;">Maaf terjadi kesalahan dengan sistem kami, jika kamu sudah melakukan pembayaran dan berhasil, tunjukkan history pembayaran dan email ini ke panitia kami.</p>
+    
+    <table cellpadding="6" cellspacing="0" border="0" style="border-collapse: collapse; margin-top: 10px; width: 100%; max-width: 600px;">
+      <tr>
+        <td style="font-weight: bold; width: 150px;">Nama</td>
+        <td>${dataPayment[0].name}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Email</td>
+        <td>${dataPayment[0].email}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Nama Event</td>
+        <td>${dataPayment[0].event_name}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Transaction ID</td>
+        <td>${transaction_id}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Transaction Time</td>
+        <td>${transaction_time}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Payment Type</td>
+        <td>${payment_type}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Order ID</td>
+        <td>${order_id}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Ticket</td>
+        <td>${dataPayment[0].ticket}</td>
+      </tr>
+    </table>
+    
+    <p style="margin-top: 20px; color: #555; font-size: 12px;">
+      *Email ini dikirim otomatis oleh sistem. Mohon tidak membalas email ini.
+    </p>
+  </div>`,
+            });
+
             return NextResponse.json(
               { message: "Failed to send email" },
               { status: 500 }
             );
           }
         } catch {
+          await transporter.sendMail({
+            from: process.env.DEFAULT_EMAIL_USER_ADMIN,
+            to: dataPayment[0].email,
+            subject: "Failed Sending Email | Payment ~ Smasa E-Ticket",
+            html: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p style="font-weight: bold; font-size: 20px;">Maaf terjadi kesalahan dengan sistem kami, jika kamu sudah melakukan pembayaran dan berhasil, tunjukkan history pembayaran dan email ini ke panitia kami.</p>
+    
+    <table cellpadding="6" cellspacing="0" border="0" style="border-collapse: collapse; margin-top: 10px; width: 100%; max-width: 600px;">
+      <tr>
+        <td style="font-weight: bold; width: 150px;">Nama</td>
+        <td>${dataPayment[0].name}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Email</td>
+        <td>${dataPayment[0].email}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Nama Event</td>
+        <td>${dataPayment[0].event_name}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Transaction ID</td>
+        <td>${transaction_id}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Transaction Time</td>
+        <td>${transaction_time}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Payment Type</td>
+        <td>${payment_type}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Order ID</td>
+        <td>${order_id}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Ticket</td>
+        <td>${dataPayment[0].ticket}</td>
+      </tr>
+    </table>
+    
+    <p style="margin-top: 20px; color: #555; font-size: 12px;">
+      *Email ini dikirim otomatis oleh sistem. Mohon tidak membalas email ini.
+    </p>
+  </div>`,
+          });
+
           return NextResponse.json(
             { message: "Failed update data to payemnt status" },
             { status: 500 }
