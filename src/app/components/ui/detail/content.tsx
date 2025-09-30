@@ -23,7 +23,7 @@ export default function Content({
   const [isNameErr, setIsNameErr] = useState<boolean>(false);
   const [isEmailInfoOpen, setIsEmailInfoOpen] = useState<boolean>(false);
   useEffect(() => {
-    const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
+    const snapScript = "https://app.midtrans.com/snap/snap.js";
     const clientKey = process.env.MIDTRANS_CLIENT_KEY;
     const script = document.createElement("script");
     script.src = snapScript;
