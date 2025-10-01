@@ -311,9 +311,11 @@ export default function Content({
                   <button
                     disabled={count > event?.ticket || isLoading}
                     type="submit"
-                    className="bg-[#873567] px-4 py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed sm:text-xl"
+                    className={`bg-[#873567] py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed sm:text-xl ${
+                      event?.ticket === 0 ? "px-3" : "px-4"
+                    }`}
                   >
-                    Beli Tiket
+                    {event?.ticket === 0 ? "Tiket Habis" : "Beli Tiket"}
                   </button>
                 </div>
               </aside>

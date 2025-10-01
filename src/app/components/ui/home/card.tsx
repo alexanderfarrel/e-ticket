@@ -11,7 +11,7 @@ export default function Card({
   src,
   keyId,
   ticket,
-  viewTicket = false,
+  viewTicket = true,
 }: {
   id: string;
   keyId: string;
