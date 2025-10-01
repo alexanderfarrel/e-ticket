@@ -85,7 +85,7 @@ export default function Header({
               height={100}
               className="max-w-[20px] max-h-[20px] w-full sm:max-w-[22px] sm:max-h-[22px]"
             />
-            <span>{timeConvert}</span>
+            <span>15:00</span>
           </h1>
         </div>
       </section>
