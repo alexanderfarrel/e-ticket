@@ -35,7 +35,7 @@ export default function Card({
       }
     >
       <div className="overflow-hidden rounded-lg w-full mx-auto relative aspect-[4/3]">
-        {ticket === 0 && (
+        {ticket <= 0 && (
           <div className="absolute top-0 left-0 w-full h-full bg-black/40 flex justify-center items-center z-10">
             <h1 className="font-semibold text-red-500 text-2xl w-full bg-black text-center">
               Sold Out!
