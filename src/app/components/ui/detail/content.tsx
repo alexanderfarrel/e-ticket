@@ -250,10 +250,15 @@ export default function Content({
               />
             </section>
 
-            <div className="p-3 bg-transparent rounded-xl max-w-3xl mx-auto text-justify relative z-[10] mt-52 border">
-              <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
-              <p className="text-white sm:text-2xl sm:leading-[32px]">
-                {detailEvent.description}
+            <div className="bg-transparent max-w-3xl mx-auto text-justify relative z-[10] mt-52">
+              <div className="border p-3 rounded-xl">
+                <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
+                <p className="text-white sm:text-2xl sm:leading-[32px]">
+                  {detailEvent.description}
+                </p>
+              </div>
+              <p className="text-center text-[13px] text-yellow-400/90 mt-3">
+                {`*QRIS yang benar adalah "Warung Jujugan"`}
               </p>
             </div>
             <form
