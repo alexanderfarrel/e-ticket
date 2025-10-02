@@ -57,7 +57,7 @@ export default function ScanView() {
             setIsStartScanActive(false);
             setIsScanning(false);
             setCustData(data);
-            return toast.error("Internal Server Error");
+            return toast.error(data.message);
           }
           setIsStartScanActive(false);
           setCustData(data);
