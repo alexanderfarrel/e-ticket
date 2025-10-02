@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 export default function Counter({
   maxCount,
   count,
@@ -8,9 +10,14 @@ export default function Counter({
   setCount: React.Dispatch<React.SetStateAction<number>>;
 }) {
   const handleUp = () => {
+    if (count >= maxCount)
+      return toast.info("Pembelian tiket sudah mencapai batas");
+
     if (count < maxCount) setCount(count + 1);
   };
   const handleDown = () => {
+    if (count <= 1) return toast.error("Minimal pembelian adalah 1 tiket");
+
     if (count > 1) setCount(count - 1);
   };
   return (
