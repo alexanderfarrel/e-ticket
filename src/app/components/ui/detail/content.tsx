@@ -258,7 +258,7 @@ export default function Content({
                 </p>
               </div>
               <p className="text-center text-[13px] text-yellow-400/90 mt-3">
-                {`*QRIS yang benar adalah "Warung Jujugan"`}
+                {`Ticket Sudah Habis!`}
               </p>
             </div>
             <form
@@ -304,23 +304,19 @@ export default function Content({
                 )}
               </div>
               <aside className="w-full rounded-lg flex justify-between items-center">
-                <Counter
-                  maxCount={event?.ticket}
-                  count={count}
-                  setCount={setCount}
-                />
+                <Counter maxCount={0} count={count} setCount={setCount} />
                 <div className="flex gap-2 sm:gap-5 items-center">
                   <p className="text-white sm:text-xl">
                     {toIdr(event?.price * count)}
                   </p>
                   <button
-                    disabled={count > event?.ticket || isLoading}
+                    disabled={count > 0 || isLoading}
                     type="submit"
                     className={`bg-[#873567] py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed sm:text-xl ${
-                      event?.ticket <= 0 ? "px-3" : "px-4"
+                      0 <= 0 ? "px-3" : "px-4"
                     }`}
                   >
-                    {event?.ticket <= 0 ? "Tiket Habis" : "Beli Tiket"}
+                    {0 <= 0 ? "Tiket Habis" : "Beli Tiket"}
                   </button>
                 </div>
               </aside>

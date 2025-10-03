@@ -36,7 +36,7 @@ export default function Content({
                 title={item.title}
                 description={item.description}
                 src={item.src}
-                ticket={item.ticket}
+                ticket={0}
               />
             </React.Fragment>
           ))}
