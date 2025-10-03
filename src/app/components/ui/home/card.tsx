@@ -45,9 +45,7 @@ export default function Card({
         <Image
           src={"/images/bnc_2025/thumb.webp"}
           alt=""
-          className=""
-          objectFit="cover"
-          objectPosition="center"
+          className="object-cover object-center"
           fill
         />
       </div>
