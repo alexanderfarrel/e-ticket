@@ -45,7 +45,11 @@ export default function ScanView() {
           const data = await res?.json();
           if (res.status !== 200 && res.status !== 500) {
             setIsError(true);
-            setErrorText("Invalid");
+            if (res.status === 404) {
+              setErrorText("Not Found");
+            } else {
+              setErrorText("Invalid");
+            }
             setIsStartScanActive(false);
             setIsScanning(false);
             setCustData(data);
