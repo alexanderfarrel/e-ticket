@@ -1,9 +1,27 @@
 import verifyToken from "@/app/components/hooks/verifyToken/verifyToken";
 import { QrCodeInterface } from "@/app/components/interfaces/qrCode";
+import { authOptions } from "@/libs/auth/auth";
 import { db } from "@/libs/firebase/admin";
+import { firestore } from "@/libs/firebase/init";
+import { doc, getDoc } from "firebase/firestore";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
+async function checkAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return null;
+
+  const userDoc = await getDoc(doc(firestore, "users", session.user.id));
+  if (!userDoc.exists() || userDoc.data().role !== "admin") return null;
+
+  return session;
+}
+
 export async function GET(req: NextRequest) {
+  const session = await checkAdmin();
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   try {
     const token = req.headers.get("authorization")?.split(" ")[1] ?? "";
     await verifyToken(token, true);

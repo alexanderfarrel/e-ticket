@@ -5,6 +5,7 @@ export interface SessionInterface {
 }
 
 export interface userSession {
+  id: string;
   email: string;
   name: string;
   role: string;

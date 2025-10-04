@@ -5,14 +5,32 @@ import { SessionInterface } from "@/app/components/interfaces/session";
 import AdminLayout from "@/app/components/layouts/admin/adminLayout";
 import Card from "@/app/components/ui/home/card";
 import toDate from "@/app/components/utils/toDate";
-import { useSession } from "next-auth/react";
-import React from "react";
+import { firestore } from "@/libs/firebase/init";
+import { doc, onSnapshot } from "firebase/firestore";
+import { signOut, useSession } from "next-auth/react";
+import React, { useEffect } from "react";
 
 export default function EventView() {
   const { data, loading, error } = useGetEvent();
-
   const { data: sessionData } = useSession();
   const session: SessionInterface = sessionData as SessionInterface;
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const unsub = onSnapshot(
+      doc(firestore, "users", session.user.id),
+      (snapshot) => {
+        const data = snapshot.data();
+        if (data && data.role !== "admin") {
+          signOut();
+          window.location.href = "/auth/login";
+        }
+      }
+    );
+
+    return () => unsub();
+  }, [session?.user?.id]);
   return (
     <AdminLayout isFixHeight name={session?.user?.name}>
       <section className="px-4 h-full mt-16">

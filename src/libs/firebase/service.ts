@@ -5,20 +5,17 @@ import {
   doc,
   getDoc,
   getDocs,
-  getFirestore,
   query,
   UpdateData,
   updateDoc,
   where,
 } from "firebase/firestore";
-import app from "./init";
 import { EventInterface } from "@/app/components/interfaces/event";
 import { QrCodeInterface } from "@/app/components/interfaces/qrCode";
 import { PaymentStatusInterface } from "@/app/components/interfaces/paymentStatus";
 import { LoginGooglePropsInterface } from "@/app/components/interfaces/loginGoogleProps";
 import { db } from "./admin";
-
-const firestore = getFirestore(app);
+import { firestore } from "./init";
 
 export async function retrieveData(collectionName: string) {
   const snapshot = await getDocs(collection(firestore, collectionName));
@@ -125,6 +122,7 @@ export async function loginWithGoogle(data: LoginGooglePropsInterface) {
   if (user.length > 0) {
     data.role = user[0].role;
     data.name = user[0].name;
+    data.id = user[0].id;
     return { status: true, user: data };
   } else {
     data.role = "user";

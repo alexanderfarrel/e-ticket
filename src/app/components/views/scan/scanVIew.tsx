@@ -1,11 +1,13 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminLayout from "../../layouts/admin/adminLayout";
 import { Html5Qrcode } from "html5-qrcode";
 import { CustDataInterface } from "../../interfaces/qrCode";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { SessionInterface } from "../../interfaces/session";
 import { toast } from "sonner";
+import { doc, onSnapshot } from "firebase/firestore";
+import { firestore } from "@/libs/firebase/init";
 export default function ScanView() {
   const { data } = useSession();
   const session: SessionInterface = data as SessionInterface;
@@ -18,6 +20,23 @@ export default function ScanView() {
   const [isStartScanActive, setIsStartScanActive] = useState<boolean>(false);
   const [isLogoutScanActive, setIsLogoutScanActive] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const unsub = onSnapshot(
+      doc(firestore, "users", session.user.id),
+      (snapshot) => {
+        const data = snapshot.data();
+        if (data && data.role !== "admin") {
+          signOut();
+          window.location.href = "/auth/login";
+        }
+      }
+    );
+
+    return () => unsub();
+  }, [session?.user?.id]);
 
   const startScanner = async () => {
     if (!readerRef.current) return;
