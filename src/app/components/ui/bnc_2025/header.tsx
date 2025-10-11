@@ -49,12 +49,6 @@ export default function Header({
             />
           </div>
         </main>
-        {/* <h1 className="text-4xl font-bold text-white max-sm:text-3xl mt-1">
-          {title}
-        </h1>
-        <p className="text-xl font-light text-white mt-1 max-sm:text-lg">
-          {sub_title}
-        </p> */}
 
         <div className="absolute bottom-0 translate-y-1/2 mx-auto border-2 border-[#ffb64d] bg-[#770b4d] text-white flex gap-4 p-2 rounded-lg shadow-xl max-sm:text-sm">
           <h1 className="flex gap-1 sm:gap-2 items-center sm:text-xl">
@@ -85,7 +79,7 @@ export default function Header({
               height={100}
               className="max-w-[20px] max-h-[20px] w-full sm:max-w-[22px] sm:max-h-[22px]"
             />
-            <span>15:00</span>
+            <span>{timeConvert}</span>
           </h1>
         </div>
       </section>

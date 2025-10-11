@@ -1,7 +1,7 @@
 import { EventInterface } from "@/app/components/interfaces/event";
 import Navbar from "@/app/components/layouts/navbar/navbar";
-import Content from "@/app/components/ui/detail/content";
-import Header from "@/app/components/ui/detail/header";
+import Content from "@/app/components/ui/bnc_2025/content";
+import Header from "@/app/components/ui/bnc_2025/header";
 import toDate from "@/app/components/utils/toDate";
 
 export default function Bnc2025View({

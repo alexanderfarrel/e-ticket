@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       transaction_time,
       payment_type,
     } = body;
-    if (transaction_status === "expire") {
+    if (["expire", "cancel", "deny"].includes(transaction_status)) {
       await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/event`, {
         method: "PUT",
         headers: {
@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
               event_name: dataPayment[0].event_name,
               scanned_at: "-",
               action: "First Scan",
+              scanned_by: "-",
             };
 
             await db.collection("qr_detail").add(data);

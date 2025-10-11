@@ -6,6 +6,7 @@ import { toIdr } from "../../utils/toIdr";
 import { EventInterface } from "../../interfaces/event";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -22,6 +23,7 @@ export default function Content({
   const [count, setCount] = useState<number>(1);
   const [isNameErr, setIsNameErr] = useState<boolean>(false);
   const [isEmailInfoOpen, setIsEmailInfoOpen] = useState<boolean>(false);
+  const [isSoldOut, setIsSoldOut] = useState<boolean>(false);
   useEffect(() => {
     const snapScript = "https://app.midtrans.com/snap/snap.js";
     const clientKey = process.env.MIDTRANS_CLIENT_KEY;
@@ -37,6 +39,18 @@ export default function Content({
     };
   }, []);
 
+  useEffect(() => {
+    if (!detailEvent) return;
+
+    const closeTime = detailEvent?.closeTime?.seconds
+      ? new Date(detailEvent.closeTime.seconds * 1000)
+      : null;
+
+    if (detailEvent.isSoldOut || (closeTime && new Date() > closeTime)) {
+      setIsSoldOut(true);
+    }
+  }, [detailEvent]);
+
   const {
     data: event,
     error,
@@ -51,15 +65,15 @@ export default function Content({
     );
   }
 
-  const handleCheckoutInvalid = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!name || !email) {
-      toast.error("Mohon isi nama dan email");
-      return;
-    }
+  // const handleCheckoutInvalid = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (!name || !email) {
+  //     toast.error("Mohon isi nama dan email");
+  //     return;
+  //   }
 
-    return toast.info("Maaf Saat ini pembayaran belum tersedia ");
-  };
+  //   return toast.info("Maaf Saat ini pembayaran belum tersedia ");
+  // };
 
   const handleCheckout = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,9 +84,10 @@ export default function Content({
     setIsEmailInfoOpen(false);
     setIsLoading(true);
     try {
-      const newId = `${slug}-${Date.now() + Math.random()}`;
+      const orderId = uuidv4().replace(/-/g, "").slice(0, 24);
       const data = {
-        id: newId,
+        orderId,
+        eventId: "5W7jcnr28tGc5E8tywRl",
         productName: event?.title,
         price: event?.price,
         quantity: count,
@@ -108,22 +123,18 @@ export default function Content({
       }
       window?.snap?.pay(reqData?.token?.token, {
         async onError() {
-          await handleFail(newId);
+          await handleFail(orderId);
           setIsLoading(false);
           mutate();
         },
         async onClose() {
-          await handleFail(newId);
+          await handleFail(orderId);
           setIsLoading(false);
           mutate();
         },
       });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error("Ups Terjadi Kesalahan");
-      } else {
-        toast.error("Ups Terjadi Kesalahan");
-      }
+    } catch {
+      toast.error("Ups Terjadi Kesalahan");
       setIsLoading(false);
     } finally {
       setIsLoading(false);
@@ -194,35 +205,8 @@ export default function Content({
                 className="absolute left-1/2 top-[30%] -translate-x-1/2
                w-[60%] max-w-[800px] h-auto z-[2]"
               />
-
-              {/* <Image
-                src={"/images/bnc_2025/hills.webp"}
-                alt="hills"
-                width={1000}
-                height={1000}
-                className="w-full h-auto absolute left-0 top-full -translate-y-[60%] z-[3]"
-              />
-              <section className="w-full h-auto absolute left-0 top-full -translate-y-[25%] z-[4] overflow-hidden">
-                <div className="w-full h-full overflow-hidden">
-                  <Image
-                    src={"/images/bnc_2025/forrest.webp"}
-                    alt="forrest"
-                    width={1000}
-                    height={1000}
-                    className="w-full h-auto"
-                  />
-                </div>
-                <Image
-                  src={"/images/bnc_2025/haze.webp"}
-                  alt="haze"
-                  width={1000}
-                  height={1000}
-                  className="absolute top-1/7 left-0 w-full h-auto"
-                />
-              </section> */}
             </div>
           </section>
-          {/* <section className="w-full h-[150dvw] bg-[#0b0105]"></section> */}
           <section className="w-full bg-[#0b0105] px-7 flex flex-col gap-3 relative z-50">
             <Image
               src={"/images/bnc_2025/hills.webp"}
@@ -257,9 +241,11 @@ export default function Content({
                   {detailEvent.description}
                 </p>
               </div>
-              <p className="text-center text-[13px] text-yellow-400/90 mt-3">
-                {`Ticket Sudah Habis!`}
-              </p>
+              {isSoldOut && (
+                <p className="text-center text-[13px] text-yellow-400/90 mt-3">
+                  {`Ticket Sudah Habis!`}
+                </p>
+              )}
             </div>
             <form
               action=""
@@ -304,19 +290,25 @@ export default function Content({
                 )}
               </div>
               <aside className="w-full rounded-lg flex justify-between items-center">
-                <Counter maxCount={0} count={count} setCount={setCount} />
+                <Counter
+                  maxCount={isSoldOut ? 0 : detailEvent.ticket}
+                  count={count}
+                  setCount={setCount}
+                />
                 <div className="flex gap-2 sm:gap-5 items-center">
                   <p className="text-white sm:text-xl">
                     {toIdr(event?.price * count)}
                   </p>
                   <button
-                    disabled={count > 0 || isLoading}
+                    disabled={
+                      count > detailEvent.ticket || isLoading || isSoldOut
+                    }
                     type="submit"
                     className={`bg-[#873567] py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed sm:text-xl ${
-                      0 <= 0 ? "px-3" : "px-4"
+                      isSoldOut ? "px-3" : "px-4"
                     }`}
                   >
-                    {0 <= 0 ? "Tiket Habis" : "Beli Tiket"}
+                    {isSoldOut ? "Tiket Habis" : "Beli Tiket"}
                   </button>
                 </div>
               </aside>

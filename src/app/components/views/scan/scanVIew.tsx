@@ -1,13 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import AdminLayout from "../../layouts/admin/adminLayout";
 import { Html5Qrcode } from "html5-qrcode";
 import { CustDataInterface } from "../../interfaces/qrCode";
 import { signOut, useSession } from "next-auth/react";
 import { SessionInterface } from "../../interfaces/session";
 import { toast } from "sonner";
-import { doc, onSnapshot } from "firebase/firestore";
-import { firestore } from "@/libs/firebase/init";
 export default function ScanView() {
   const { data } = useSession();
   const session: SessionInterface = data as SessionInterface;
@@ -17,26 +15,8 @@ export default function ScanView() {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [custData, setCustData] = useState<CustDataInterface | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
-  const [isStartScanActive, setIsStartScanActive] = useState<boolean>(false);
-  const [isLogoutScanActive, setIsLogoutScanActive] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
-
-  useEffect(() => {
-    if (!session?.user?.id) return;
-
-    const unsub = onSnapshot(
-      doc(firestore, "users", session.user.id),
-      (snapshot) => {
-        const data = snapshot.data();
-        if (data && data.role !== "admin") {
-          signOut();
-          window.location.href = "/auth/login";
-        }
-      }
-    );
-
-    return () => unsub();
-  }, [session?.user?.id]);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
 
   const startScanner = async () => {
     if (!readerRef.current) return;
@@ -48,11 +28,11 @@ export default function ScanView() {
     setIsScanning(true);
     setIsError(false);
     try {
-      setIsStartScanActive(true);
       await qrRef.current.start(
         { facingMode: "environment" },
         { fps: 10 },
         async (decodedText) => {
+          setIsDisabled(true);
           setDecodedResult(decodedText);
           qrRef?.current?.stop();
           const res = await fetch(`/api/qr?qrCode=${decodedText}`, {
@@ -66,25 +46,28 @@ export default function ScanView() {
             setIsError(true);
             if (res.status === 404) {
               setErrorText("Not Found");
+            } else if (res.status === 403 || res.status === 401) {
+              setErrorText("Unauthorized");
+              signOut();
             } else {
               setErrorText("Invalid");
             }
-            setIsStartScanActive(false);
             setIsScanning(false);
             setCustData(data);
+            setIsDisabled(false);
             return toast.error(data.message);
           }
           if (res.status === 500) {
             setIsError(true);
             setErrorText("Server Error");
-            setIsStartScanActive(false);
             setIsScanning(false);
             setCustData(data);
+            setIsDisabled(false);
             return toast.error(data.message);
           }
-          setIsStartScanActive(false);
           setCustData(data);
           setIsScanning(false);
+          setIsDisabled(false);
           if (data.message === "Scanned")
             return toast.error("User sudah pernah masuk!");
           return toast.success("User boleh masuk!");
@@ -101,8 +84,6 @@ export default function ScanView() {
       try {
         await qrRef.current.stop();
         setIsScanning(false);
-        setIsLogoutScanActive(false);
-        setIsStartScanActive(false);
       } catch {
         toast.error("ups something went wrong ~ try refreshing the page");
       }
@@ -110,8 +91,6 @@ export default function ScanView() {
   };
 
   const handleStartScan = () => {
-    if (isLogoutScanActive) return;
-
     if (isScanning) {
       stopScanner();
     } else {
@@ -122,85 +101,6 @@ export default function ScanView() {
     return;
   };
 
-  // const startLogoutScan = async () => {
-  //   if (!readerRef.current) return;
-
-  //   if (!qrRef.current) {
-  //     qrRef.current = new Html5Qrcode(readerRef.current.id);
-  //   }
-
-  //   setIsScanning(true);
-  //   setIsError(false);
-  //   try {
-  //     setIsLogoutScanActive(true);
-  //     await qrRef.current.start(
-  //       { facingMode: "environment" },
-  //       { fps: 10 },
-  //       async (decodedText) => {
-  //         setDecodedResult(decodedText);
-  //         qrRef?.current?.stop();
-  //         const res = await fetch(`/api/qr?qrCode=${decodedText}`, {
-  //           method: "PUT",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             authorization: `Bearer ${session?.accessToken}`,
-  //           },
-  //         });
-  //         const data = await res?.json();
-  //         if (data.message === "Unauthorized") {
-  //           setIsError(true);
-  //           setIsScanning(false);
-  //           setIsLogoutScanActive(false);
-  //           setErrorText("Unauthorized");
-  //           setTimeout(() => {
-  //             return (window.location.href = "/unauthorized");
-  //           }, 2000);
-  //         } else if (data.message === "Not found") {
-  //           setIsError(true);
-  //           setIsScanning(false);
-  //           setIsLogoutScanActive(false);
-  //           setErrorText("Not Found");
-  //           return toast.error("qr tidak terdaftar!");
-  //         } else if (data.message === "Belum Pernah di scan!") {
-  //           setIsError(true);
-  //           setIsScanning(false);
-  //           setIsLogoutScanActive(false);
-  //           setErrorText("Unscanned");
-  //           return toast.error("Belum Pernah di scan!");
-  //         } else if (data.message === "Already Exited") {
-  //           setIsError(true);
-  //           setIsScanning(false);
-  //           setIsLogoutScanActive(false);
-  //           setErrorText("Invalid");
-  //           setCustData(data);
-  //           return toast.error("Sudah Pernah Keluar!");
-  //         }
-  //         setCustData(data);
-  //         setIsLogoutScanActive(false);
-  //         setIsScanning(false);
-  //         return toast.success("User boleh keluar!");
-  //       },
-  //       () => {}
-  //     );
-  //   } catch {
-  //     toast.error("ups something went wrong ~ try refreshing the page");
-  //   }
-  // };
-
-  // const handleScanLogout = () => {
-  //   if (isStartScanActive) {
-  //     return;
-  //   }
-
-  //   if (isScanning) {
-  //     stopScanner();
-  //   } else {
-  //     setDecodedResult("-");
-  //     setCustData(null);
-  //     startLogoutScan();
-  //   }
-  //   return;
-  // };
   return (
     <AdminLayout isFixHeight name={session?.user?.name}>
       <div className="h-[100dvh] w-full flex flex-col items-center px-5">
@@ -229,6 +129,10 @@ export default function ScanView() {
         <section className="w-full max-h-[30dvh] overflow-y-auto rounded-xl overflow-x-hidden">
           <table className="table-auto w-full border-separate break-all">
             <tbody className="bg-gray-400/50">
+              <tr className="">
+                <td className="p-1 pr-3 whitespace-nowrap font-bold">QRcode</td>
+                <td className="p-1 w-full">{decodedResult}</td>
+              </tr>
               <tr className="bg-gray-300">
                 <td className="p-1 pr-3 whitespace-nowrap font-bold">Nama</td>
                 <td className="p-1 w-full">{custData?.data?.name || "-"}</td>
@@ -243,7 +147,7 @@ export default function ScanView() {
                   {custData?.data?.event_name || "-"}
                 </td>
               </tr>
-              <tr className="bg-gray-300">
+              <tr className="">
                 <td className="p-1 pr-3 whitespace-nowrap font-bold">
                   Scanned At
                 </td>
@@ -251,13 +155,17 @@ export default function ScanView() {
                   {custData?.data?.scanned_at || "-"}
                 </td>
               </tr>
-              <tr className="p-2">
+              <tr className=" bg-gray-300">
+                <td className="p-1 pr-3 whitespace-nowrap font-bold">
+                  Scanned By
+                </td>
+                <td className="p-1 w-full">
+                  {custData?.data?.scanned_by || "-"}
+                </td>
+              </tr>
+              <tr className="">
                 <td className="p-1 pr-3 whitespace-nowrap font-bold">Action</td>
                 <td className="p-1 w-full">{custData?.data?.action || "-"}</td>
-              </tr>
-              <tr className="p-2">
-                <td className="p-1 pr-3 whitespace-nowrap font-bold">QRcode</td>
-                <td className="p-1 w-full">{decodedResult}</td>
               </tr>
               <tr className="bg-gray-300">
                 <td className="p-1 pr-3 whitespace-nowrap font-bold">
@@ -275,8 +183,8 @@ export default function ScanView() {
                   {custData?.data?.payment_type || "-"}
                 </td>
               </tr>
-              <tr>
-                <td className="p-1 pr-3 whitespace-nowrap font-bold">
+              <tr className="bg-gray-300">
+                <td className="p-1 pr-3 whitespace-nowrap font-bold ">
                   Payment Date
                 </td>
                 <td className="p-1 w-full">
@@ -288,27 +196,13 @@ export default function ScanView() {
         </section>
 
         <div className="flex w-full my-auto justify-between">
-          {/* <button className="opacity-0">Log</button> */}
           <button
-            disabled={isLogoutScanActive}
+            disabled={isDisabled}
             onClick={handleStartScan}
             className="bg-blue-500 px-12 py-2 rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed cursor-pointer hover:bg-blue-500/80 mx-auto text-white "
           >
             {isScanning ? "Stop" : "Start"} Scan
           </button>
-          {/* <button
-            className="bg-red-500 p-1 px-2 rounded-lg cursor-pointer hover:bg-red-500/80 disabled:bg-gray-500 disabled:cursor-not-allowed"
-            disabled={isStartScanActive}
-            onClick={handleScanLogout}
-          >
-            <Image
-              className="w-[31px] h-[35px]"
-              src="/images/logout.png"
-              alt="logout"
-              width={15}
-              height={15}
-            />
-          </button> */}
         </div>
       </div>
     </AdminLayout>

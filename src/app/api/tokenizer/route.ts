@@ -11,7 +11,8 @@ const snap = new Midtrans.Snap({
 
 export async function POST(req: NextRequest) {
   try {
-    const { id, productName, price, quantity, name, email } = await req.json();
+    const { orderId, eventId, productName, price, quantity, name, email } =
+      await req.json();
     const usernameRegex = /^[a-zA-Z0-9 ]{3,50}$/;
     if (!usernameRegex.test(name)) {
       return NextResponse.json(
@@ -26,7 +27,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Invalid email" }, { status: 400 });
     }
 
-    const eventId = id.split("-")[0];
     const eventData = await db
       .collection("event")
       .doc(eventId)
@@ -51,14 +51,14 @@ export async function POST(req: NextRequest) {
     try {
       const parameter = {
         transaction_details: {
-          order_id: id,
+          order_id: orderId,
           gross_amount: price * quantity,
         },
         item_details: [
           {
             name: productName,
-            price: price,
-            quantity: quantity,
+            price,
+            quantity,
           },
         ],
         customer_details: {
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
           status: "pending",
           name: trimName,
           email,
-          order_id: id,
+          order_id: orderId,
           event_id: eventId,
           ticket: quantity,
           event_name: productName,

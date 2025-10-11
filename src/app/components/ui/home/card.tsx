@@ -12,6 +12,7 @@ export default function Card({
   keyId,
   ticket,
   viewTicket = true,
+  isSoldOut,
 }: {
   id: string;
   keyId: string;
@@ -21,6 +22,7 @@ export default function Card({
   src: string;
   ticket: number;
   viewTicket?: boolean;
+  isSoldOut?: boolean;
 }) {
   const router = useTransitionRouter();
   const dateConvert = date.toLocaleDateString("id-ID").split("/").join("-");
@@ -35,19 +37,14 @@ export default function Card({
       }
     >
       <div className="overflow-hidden rounded-lg w-full mx-auto relative aspect-[4/3]">
-        {ticket <= 0 && (
+        {(ticket <= 0 || isSoldOut) && (
           <div className="absolute top-0 left-0 w-full h-full bg-black/40 flex justify-center items-center z-10">
             <h1 className="font-semibold text-red-500 text-2xl w-full bg-black text-center">
               Sold Out!
             </h1>
           </div>
         )}
-        <Image
-          src={"/images/bnc_2025/thumb.webp"}
-          alt=""
-          className="object-cover object-center"
-          fill
-        />
+        <Image src={src} alt="" className="object-cover object-center" fill />
       </div>
       <div className="flex justify-between items-center -mb-1">
         <h1 className="font-bold">{title}</h1>
@@ -55,7 +52,7 @@ export default function Card({
           <p className="font-light text-[14px]">{dateConvert}</p>
         ) : (
           <p className={`text-sm font-light`}>
-            Ticket : <span>{ticket}</span>
+            Ticket : <span>{isSoldOut ? "0" : ticket}</span>
           </p>
         )}
       </div>
