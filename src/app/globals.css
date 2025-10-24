@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-/* 
----break--- */
+
 @font-face {
   font-family: "ClimateCrisis";
   src: url("/fonts/ClimateCrisis-Regular-VariableFont_YEAR.ttf")
@@ -10,15 +9,40 @@
   font-style: normal;
 }
 
-.tes {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 @theme {
   --breakpoint-xsm: 450px;
   --font-logo: "ClimateCrisis", sans-serif;
+  --animate-fadeInIntro: fadeIn 0.5s ease-in-out forwards 1s;
+  --animate-fadeIn: fadeIn 0.3s ease-in-out forwards;
+  --animate-fadeOut: fadeOut 0.3s ease-in-out forwards;
+  --animate-popUp: popUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes popUp {
+  0% {
+    transform: translateY(40px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 @custom-variant dark (&:is(.dark *));

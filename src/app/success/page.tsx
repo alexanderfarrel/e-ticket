@@ -8,7 +8,9 @@ export default function SuccessPage() {
   const statusCode = searchParams.get("status_code");
   return (
     <>
-      {transactionStatus === "settlement" && statusCode === "200" ? (
+      {(transactionStatus === "settlement" ||
+        transactionStatus === "capture") &&
+      statusCode === "200" ? (
         <main className="grid min-h-screen place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
           <div className="text-center">
             <p className="font-semibold text-green-500 text-[4rem] leading-[3rem] max-sm:text-3xl">

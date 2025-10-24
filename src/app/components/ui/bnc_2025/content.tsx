@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { toIdr } from "../../utils/toIdr";
 import { EventInterface } from "../../interfaces/event";
 import useSWR from "swr";
-import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
+import BuyModal from "../../layouts/modalLayouts/buyModal";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -17,15 +16,11 @@ export default function Content({
   detailEvent: EventInterface;
   slug: string | null;
 }) {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [count, setCount] = useState<number>(1);
-  const [isNameErr, setIsNameErr] = useState<boolean>(false);
-  const [isEmailInfoOpen, setIsEmailInfoOpen] = useState<boolean>(false);
   const [isSoldOut, setIsSoldOut] = useState<boolean>(false);
+  const [openBuyModal, setOpenBuyModal] = useState<boolean>(false);
   useEffect(() => {
-    const snapScript = "https://app.midtrans.com/snap/snap.js";
+    const snapScript = process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL ?? "";
     const clientKey = process.env.MIDTRANS_CLIENT_KEY;
     const script = document.createElement("script");
     script.src = snapScript;
@@ -75,82 +70,10 @@ export default function Content({
   //   return toast.info("Maaf Saat ini pembayaran belum tersedia ");
   // };
 
-  const handleCheckout = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleBuyTicket = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name || !email) {
-      toast.error("Mohon isi nama dan email");
-      return;
-    }
-    setIsEmailInfoOpen(false);
-    setIsLoading(true);
-    try {
-      const orderId = uuidv4().replace(/-/g, "").slice(0, 24);
-      const data = {
-        orderId,
-        eventId: "5W7jcnr28tGc5E8tywRl",
-        productName: event?.title,
-        price: event?.price,
-        quantity: count,
-        email,
-        name,
-      };
-
-      const res = await fetch("/api/tokenizer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const reqData = await res.json();
-      if (reqData.message === "Invalid username") {
-        setIsNameErr(true);
-        toast.error("Invalid username");
-        setIsLoading(false);
-        return;
-      }
-      if (reqData.message === "Invalid email") {
-        toast.error("Invalid email");
-        setIsLoading(false);
-        return;
-      }
-      if (reqData.message === "Ticket not enough") {
-        toast.info("Maaf Saat Ini Ticket Sudah Habis");
-        setIsLoading(false);
-        mutate();
-        return;
-      }
-      window?.snap?.pay(reqData?.token?.token, {
-        async onError() {
-          await handleFail(orderId);
-          setIsLoading(false);
-          mutate();
-        },
-        async onClose() {
-          await handleFail(orderId);
-          setIsLoading(false);
-          mutate();
-        },
-      });
-    } catch {
-      toast.error("Ups Terjadi Kesalahan");
-      setIsLoading(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFail = async (order_id: string) => {
-    await fetch("/api/event", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        order_id,
-      }),
-    }).catch(() => toast.error("Ups Terjadi Kesalahan"));
+    setOpenBuyModal(true);
+    return;
   };
 
   return (
@@ -207,7 +130,7 @@ export default function Content({
               />
             </div>
           </section>
-          <section className="w-full bg-[#0b0105] px-7 flex flex-col gap-3 relative z-50">
+          <section className="w-full bg-[#0b0105] px-7 flex flex-col gap-0 relative z-50">
             <Image
               src={"/images/bnc_2025/hills.webp"}
               alt="hills"
@@ -234,61 +157,31 @@ export default function Content({
               />
             </section>
 
+            {/* container description */}
             <div className="bg-transparent max-w-3xl mx-auto text-justify relative z-[10] mt-52">
-              <div className="border p-3 rounded-xl">
+              <div className="border p-4 rounded-xl">
                 <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
                 <p className="text-white sm:text-2xl sm:leading-[32px]">
                   {detailEvent.description}
                 </p>
               </div>
-              {isSoldOut && (
-                <p className="text-center text-[13px] text-yellow-400/90 mt-3">
+              {isSoldOut ? (
+                <p className="text-center sm:text-lg text-[13px] text-yellow-400/90 mt-3">
                   {`Ticket Sudah Habis!`}
+                </p>
+              ) : (
+                <p className="text-center sm:text-lg text-[13px] text-yellow-400/90 mt-3">
+                  {`Sisa Tiket : ${detailEvent.ticket}`}
                 </p>
               )}
             </div>
+            {/* container form */}
             <form
               action=""
-              onSubmit={(e) => handleCheckout(e)}
-              className="bg-transparent relative flex flex-col p-4 gap-5 rounded-xl mx-auto w-full max-w-3xl z-10"
+              onSubmit={(e) => handleBuyTicket(e)}
+              className="bg-transparent relative flex flex-col p-5 gap-7 rounded-xl mx-auto w-full max-w-3xl z-10 text-white"
             >
               <div className="absolute left-0 top-0 w-full h-full bg-[#3e042c] blur-xl rounded-2xl z-[-1]"></div>
-              <div className="flex flex-col gap-3">
-                <input
-                  type="text"
-                  className="w-full bg-[#9a4875] text-white outline-none p-2 py-1 rounded-lg sm:text-xl text-base"
-                  placeholder="Nama"
-                  defaultValue={name}
-                  required
-                  min={3}
-                  max={50}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setIsNameErr(false);
-                  }}
-                />
-                {isNameErr && (
-                  <p className="text-red-500 text-sm -mt-2 ml-2">
-                    Hanya boleh mengandung huruf & angka
-                  </p>
-                )}
-                <input
-                  type="text"
-                  className="w-full bg-[#9a4875] text-white outline-none p-2 py-1 rounded-lg sm:text-xl text-base"
-                  placeholder="Email"
-                  required
-                  defaultValue={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setIsEmailInfoOpen(true);
-                  }}
-                />
-                {isEmailInfoOpen && (
-                  <p className="text-orange-400 text-sm -mt-2 -mb-2 ml-2">
-                    Pastikan email yang kamu masukkan sesuai dan aktif!
-                  </p>
-                )}
-              </div>
               <aside className="w-full rounded-lg flex justify-between items-center">
                 <Counter
                   maxCount={isSoldOut ? 0 : detailEvent.ticket}
@@ -300,9 +193,7 @@ export default function Content({
                     {toIdr(event?.price * count)}
                   </p>
                   <button
-                    disabled={
-                      count > detailEvent.ticket || isLoading || isSoldOut
-                    }
+                    disabled={count > detailEvent.ticket || isSoldOut}
                     type="submit"
                     className={`bg-[#873567] py-1 rounded-lg text-white cursor-pointer hover:bg-[#873567]/80 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed sm:text-xl ${
                       isSoldOut ? "px-3" : "px-4"
@@ -315,6 +206,14 @@ export default function Content({
             </form>
           </section>
         </main>
+      )}
+      {openBuyModal && (
+        <BuyModal
+          onClose={() => setOpenBuyModal(false)}
+          count={count}
+          mutate={mutate}
+          event={event}
+        />
       )}
     </>
   );

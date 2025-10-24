@@ -15,12 +15,14 @@ export default function Bnc2025View({
 }) {
   if (hasError) {
     return (
-      <p className="text-red-500 text-center mt-5">Failed to fetch event</p>
+      <div className="bg-white min-h-[100vh]">
+        <p className="text-red-500 text-center">Failed to fetch event</p>
+      </div>
     );
   }
   return (
     <>
-      {!hasError && detailEvent && (
+      {!hasError && detailEvent !== null && (
         <>
           <Navbar />
           <Header

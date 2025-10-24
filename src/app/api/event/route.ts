@@ -20,39 +20,45 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const { order_id } = await req.json();
-    const dataPayment = (await retrieveDataByFieldAdmin(
-      "payment_status",
-      "order_id",
-      order_id
-    )) as PaymentStatusInterface[];
-    if (dataPayment.length === 0 && dataPayment[0].status !== "pending") {
+    const paymentSnap = await db
+      .collection("payment_status")
+      .where("order_id", "==", order_id)
+      .get();
+
+    if (paymentSnap.empty) {
       return NextResponse.json(
         { message: "Payment not found" },
         { status: 404 }
       );
     }
-    const data = await retrieveDataById("event", dataPayment[0].event_id!);
-    if (data) {
-      await db
-        .collection("event")
-        .doc(dataPayment[0].event_id!)
-        .update({
-          ticket: data.ticket + dataPayment[0].ticket,
-        });
 
-      try {
-        await db.collection("payment_status").doc(dataPayment[0].id!).delete();
-        return NextResponse.json({ message: "Success" }, { status: 200 });
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          return NextResponse.json({ message: error.message }, { status: 500 });
-        }
-        return NextResponse.json(
-          { message: "Something went wrong" },
-          { status: 500 }
-        );
-      }
+    const paymentDoc = paymentSnap.docs[0];
+    const dataPayment = paymentDoc.data() as PaymentStatusInterface;
+
+    if (dataPayment.status !== "pending") {
+      return NextResponse.json(
+        { message: "Payment not found" },
+        { status: 404 }
+      );
     }
+
+    const eventRef = db.collection("event").doc(dataPayment.event_id!);
+
+    await db.runTransaction(async (transaction) => {
+      const eventSnap = await transaction.get(eventRef);
+
+      if (!eventSnap.exists) {
+        throw new Error("Event not found");
+      }
+
+      const eventData = eventSnap.data()!;
+      const newTicket = eventData.ticket + dataPayment.ticket;
+
+      transaction.update(eventRef, { ticket: newTicket });
+      transaction.delete(paymentDoc.ref);
+    });
+
+    return NextResponse.json({ message: "Success" }, { status: 200 });
   } catch (err: unknown) {
     if (err instanceof Error) {
       return NextResponse.json({ message: err.message }, { status: 500 });

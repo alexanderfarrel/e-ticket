@@ -11,11 +11,13 @@ export default function HomeView({
   hasError: boolean;
 }) {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
       <Header />
-      <Content events={events} hasError={hasError} />
-      <footer className="mt-10 mb-3 text-center">All rights reserved</footer>
-    </>
+      <div className="flex-grow">
+        <Content events={events} hasError={hasError} />
+      </div>
+      <footer className="pb-3 text-center">All rights reserved</footer>
+    </div>
   );
 }
