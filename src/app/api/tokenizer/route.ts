@@ -4,8 +4,7 @@ import validator from "validator";
 import { db } from "@/libs/firebase/admin";
 
 const snap = new Midtrans.Snap({
-  // isProduction: process.env.NODE_ENV === "production",
-  isProduction: false,
+  isProduction: process.env.NODE_ENV === "production",
   serverKey: process.env.MIDTRANS_SERVER_KEY ?? "",
   clientKey: process.env.MIDTRANS_CLIENT_KEY ?? "",
 });
