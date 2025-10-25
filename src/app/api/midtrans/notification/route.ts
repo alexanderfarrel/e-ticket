@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
 import toDate from "@/app/components/utils/toDate";
 import { QrCodeInterface } from "@/app/components/interfaces/qrCode";
 import { db } from "@/libs/firebase/admin";
+import { PaymentStatusInterface } from "@/app/components/interfaces/paymentStatus";
 
 const ALPHABET: string = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function generateCode(length: number = 20): string {
@@ -26,16 +27,16 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const {
+    order_id,
+    transaction_status,
+    fraud_status,
+    transaction_id,
+    transaction_time,
+    payment_type,
+  } = body;
   try {
-    const body = await req.json();
-    const {
-      order_id,
-      transaction_status,
-      fraud_status,
-      transaction_id,
-      transaction_time,
-      payment_type,
-    } = body;
     if (["expire", "cancel", "deny"].includes(transaction_status)) {
       await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/event`, {
         method: "PUT",
@@ -52,20 +53,19 @@ export async function POST(req: NextRequest) {
       transaction_status === "settlement" ||
       (transaction_status === "capture" && fraud_status === "accept")
     ) {
-      db.runTransaction(async (transaction) => {
+      const qrCodes: string[] = [];
+      let dataPaymentResult: PaymentStatusInterface | null = null;
+      const result = await db.runTransaction(async (transaction) => {
         const paymentSnap = await transaction.get(
           db.collection("payment_status").where("order_id", "==", order_id)
         );
 
         if (paymentSnap.empty) {
-          return NextResponse.json(
-            { message: "Payment Status not found" },
-            { status: 404 }
-          );
+          throw new Error("Payment not found");
         }
 
         const paymentDoc = paymentSnap.docs[0];
-        const dataPayment = paymentDoc.data();
+        const dataPayment = paymentDoc.data() as PaymentStatusInterface;
         const paymentRef = paymentDoc.ref;
 
         const eventRef = db.collection("event").doc(dataPayment.event_id);
@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
         const eventData = eventSnap.data();
 
         try {
-          const qrCodes: string[] = [];
           const totalTickets = dataPayment.ticket;
           const qrDetails: QrCodeInterface[] = [];
 
@@ -122,29 +121,83 @@ export async function POST(req: NextRequest) {
             const qrRef = db.collection("qr_detail").doc();
             transaction.set(qrRef, qrData);
           });
+          dataPaymentResult = dataPayment;
+          return { dataPayment, eventData, status: true };
+        } catch {
+          await transporter.sendMail({
+            from: process.env.DEFAULT_EMAIL_USER_ADMIN,
+            to: dataPayment.email,
+            subject: "Failed Sending Email | Payment ~ Smasa E-Ticket",
+            html: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p style="font-weight: bold; font-size: 20px;">Maaf terjadi kesalahan dengan sistem kami, jika kamu sudah melakukan pembayaran dan berhasil, tunjukkan history pembayaran dan email ini ke panitia kami.</p>
+    
+    <table cellpadding="6" cellspacing="0" border="0" style="border-collapse: collapse; margin-top: 10px; width: 100%; max-width: 600px;">
+      <tr>
+        <td style="font-weight: bold; width: 150px;">Nama</td>
+        <td>${dataPayment.name[0]}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Email</td>
+        <td>${dataPayment.email}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Nama Event</td>
+        <td>${dataPayment.event_name}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Transaction ID</td>
+        <td>${transaction_id}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Transaction Time</td>
+        <td>${transaction_time}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Payment Type</td>
+        <td>${payment_type}</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Order ID</td>
+        <td>${order_id}</td>
+      </tr>
+      <tr style="background-color: #f9f9f9;">
+        <td style="font-weight: bold;">Ticket</td>
+        <td>${dataPayment.ticket}</td>
+      </tr>
+    </table>
+    
+    <p style="margin-top: 20px; color: #555; font-size: 12px;">
+      *Email ini dikirim otomatis oleh sistem. Mohon tidak membalas email ini.
+    </p>
+  </div>`,
+          });
+          throw new Error("Failed Sending Email");
+        }
+      });
 
-          try {
-            const qrImages: string[] = [];
+      try {
+        const { dataPayment, eventData } = result;
+        const qrImages: string[] = [];
 
-            for (const code of qrCodes) {
-              const qrImage = await QRCode.toDataURL(code, {
-                width: 500,
-                margin: 2,
-              });
-              qrImages.push(qrImage);
-            }
+        for (const code of qrCodes) {
+          const qrImage = await QRCode.toDataURL(code, {
+            width: 500,
+            margin: 2,
+          });
+          qrImages.push(qrImage);
+        }
 
-            const dateConvert = toDate(eventData?.timestamp)
-              .toLocaleDateString("id-ID")
-              .split("/")
-              .join("-");
-            const imageName = eventData?.src.slice(
-              eventData?.src.lastIndexOf("/") + 1
-            );
+        const dateConvert = toDate(eventData?.timestamp)
+          .toLocaleDateString("id-ID")
+          .split("/")
+          .join("-");
+        const imageName = eventData?.src.slice(
+          eventData?.src.lastIndexOf("/") + 1
+        );
 
-            const qrHtml = qrImages
-              .map((_, index) => {
-                return `
+        const qrHtml = qrImages
+          .map((_, index) => {
+            return `
 <tr><td align="center">
 <table class="t119" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="500" class="t118" style="width:600px;">
 <table class="t117" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t116"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100% !important;"><tr><td><div class="t33" style="mso-line-height-rule:exactly;mso-line-height-alt:5px;line-height:5px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align="center">
@@ -152,8 +205,8 @@ export async function POST(req: NextRequest) {
 <table class="t35" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t34" style="overflow:hidden;background-color:#F6F6F6;border-radius:12px 12px 12px 12px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100% !important;"><tr><td><div class="t28" style="mso-line-height-rule:exactly;mso-line-height-alt:10px;line-height:10px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align="center">
 <table class="t32" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="250" class="t31" style="width:300px;">
 <table class="t30" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t29"><div style="font-size:0px;"><img class="t27" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="250" height="250" alt="" src="cid:qrcode_${
-                  index + 1
-                }"/></div></td></tr></table>
+              index + 1
+            }"/></div></td></tr></table>
 </td></tr></table>
 </td></tr></table></td></tr></table>
 </td></tr></table>
@@ -166,8 +219,8 @@ export async function POST(req: NextRequest) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t42" style="width:100%;"><tr><td class="t40"><p class="t39" style="margin:0;Margin:0;font-family:Inter Tight,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:600;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;direction:ltr;color:#333333;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">Nama</p></td><td class="t41" style="width:5px;" width="5"></td></tr></table>
 </td><td class="t47" width="266.25" valign="top">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t46" style="width:100%;"><tr><td class="t45"><p class="t44" style="margin:0;Margin:0;font-family:Inter Tight,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;direction:ltr;color:#787878;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">${
-                  dataPayment.name[index]
-                }</p></td></tr></table>
+              dataPayment.name[index]
+            }</p></td></tr></table>
 </td>
 <td></td></tr>
 </table></div></div></td></tr></table>
@@ -179,8 +232,8 @@ export async function POST(req: NextRequest) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t59" style="width:100%;"><tr><td class="t57"><p class="t56" style="margin:0;Margin:0;font-family:Inter Tight,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:600;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;direction:ltr;color:#333333;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">Event</p></td><td class="t58" style="width:5px;" width="5"></td></tr></table>
 </td><td class="t64" width="266.25" valign="top">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t63" style="width:100%;"><tr><td class="t62"><p class="t61" style="margin:0;Margin:0;font-family:Inter Tight,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;direction:ltr;color:#787878;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">${
-                  dataPayment.event_name
-                }</p></td></tr></table>
+              dataPayment.event_name
+            }</p></td></tr></table>
 </td>
 <td></td></tr>
 </table></div></div></td></tr></table>
@@ -203,8 +256,8 @@ export async function POST(req: NextRequest) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t95" style="width:100%;"><tr><td class="t93"><p class="t92" style="margin:0;Margin:0;font-family:Inter Tight,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:600;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;direction:ltr;color:#333333;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">Lokasi</p></td><td class="t94" style="width:5px;" width="5"></td></tr></table>
 </td><td class="t100" width="266.25" valign="top">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t99" style="width:100%;"><tr><td class="t98"><p class="t97" style="margin:0;Margin:0;font-family:Inter Tight,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:normal;font-size:16px;text-decoration:none;text-transform:none;direction:ltr;color:#787878;text-align:left;mso-line-height-rule:exactly;mso-text-raise:2px;">${
-                  eventData?.location
-                }</p></td></tr></table>
+              eventData?.location
+            }</p></td></tr></table>
 </td>
 <td></td></tr>
 </table></div></div></td></tr></table>
@@ -217,14 +270,14 @@ export async function POST(req: NextRequest) {
 
 
     `;
-              })
-              .join("");
+          })
+          .join("");
 
-            const result = await transporter.sendMail({
-              from: process.env.DEFAULT_EMAIL_USER_ADMIN,
-              to: dataPayment.email,
-              subject: "Ticket QR Code by Sma Negeri 1 Madiun",
-              html: `
+        const sendResult = await transporter.sendMail({
+          from: process.env.DEFAULT_EMAIL_USER_ADMIN,
+          to: dataPayment.email,
+          subject: "Ticket QR Code by Sma Negeri 1 Madiun",
+          html: `
                <!--
 * This email was built using Tabular.
 * For more information, visit https://tabular.email
@@ -429,105 +482,62 @@ ${qrHtml}
 </td></tr></table></td></tr></table></div><div class="gmail-fix" style="display: none; white-space: nowrap; font: 15px courier; line-height: 0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div></body>
 </html>
               `,
-              attachments: [
-                {
-                  filename: imageName,
-                  path: path.join(
-                    process.cwd(),
-                    "public",
-                    "images",
-                    "bnc_2025",
-                    imageName
-                  ),
-                  cid: "banner",
-                },
-                ...qrImages.map((qrImage, index) => ({
-                  filename: `qrcode_${index + 1}.png`,
-                  content: qrImage.split("base64,")[1],
-                  encoding: "base64",
-                  cid: `qrcode_${index + 1}`,
-                })),
-              ],
-            });
+          attachments: [
+            {
+              filename: imageName,
+              path: path.join(
+                process.cwd(),
+                "public",
+                "images",
+                "bnc_2025",
+                imageName
+              ),
+              cid: "banner",
+            },
+            ...qrImages.map((qrImage, index) => ({
+              filename: `qrcode_${index + 1}.png`,
+              content: qrImage.split("base64,")[1],
+              encoding: "base64",
+              cid: `qrcode_${index + 1}`,
+            })),
+          ],
+        });
 
-            if (result.accepted.length <= 0) {
-              return NextResponse.json(
-                { message: "Failed to send email" },
-                { status: 500 }
-              );
-            }
-
-            return NextResponse.json({ message: "Success" }, { status: 200 });
-          } catch {
-            dataPayment.status = "failed send email";
-            const paymentRef = db.collection("payment_status").doc();
-            transaction.set(paymentRef, dataPayment);
-
-            return NextResponse.json(
-              { message: "Failed to send email" },
-              { status: 500 }
-            );
-          }
-        } catch {
-          await transporter.sendMail({
-            from: process.env.DEFAULT_EMAIL_USER_ADMIN,
-            to: dataPayment.email,
-            subject: "Failed Sending Email | Payment ~ Smasa E-Ticket",
-            html: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
-    <p style="font-weight: bold; font-size: 20px;">Maaf terjadi kesalahan dengan sistem kami, jika kamu sudah melakukan pembayaran dan berhasil, tunjukkan history pembayaran dan email ini ke panitia kami.</p>
-    
-    <table cellpadding="6" cellspacing="0" border="0" style="border-collapse: collapse; margin-top: 10px; width: 100%; max-width: 600px;">
-      <tr>
-        <td style="font-weight: bold; width: 150px;">Nama</td>
-        <td>${dataPayment.name[0]}</td>
-      </tr>
-      <tr style="background-color: #f9f9f9;">
-        <td style="font-weight: bold;">Email</td>
-        <td>${dataPayment.email}</td>
-      </tr>
-      <tr>
-        <td style="font-weight: bold;">Nama Event</td>
-        <td>${dataPayment.event_name}</td>
-      </tr>
-      <tr style="background-color: #f9f9f9;">
-        <td style="font-weight: bold;">Transaction ID</td>
-        <td>${transaction_id}</td>
-      </tr>
-      <tr>
-        <td style="font-weight: bold;">Transaction Time</td>
-        <td>${transaction_time}</td>
-      </tr>
-      <tr style="background-color: #f9f9f9;">
-        <td style="font-weight: bold;">Payment Type</td>
-        <td>${payment_type}</td>
-      </tr>
-      <tr>
-        <td style="font-weight: bold;">Order ID</td>
-        <td>${order_id}</td>
-      </tr>
-      <tr style="background-color: #f9f9f9;">
-        <td style="font-weight: bold;">Ticket</td>
-        <td>${dataPayment.ticket}</td>
-      </tr>
-    </table>
-    
-    <p style="margin-top: 20px; color: #555; font-size: 12px;">
-      *Email ini dikirim otomatis oleh sistem. Mohon tidak membalas email ini.
-    </p>
-  </div>`,
-          });
-
+        if (sendResult.accepted.length <= 0) {
           return NextResponse.json(
-            { message: "Failed add qr data" },
+            { message: "Failed to send email" },
             { status: 500 }
           );
         }
-      });
+
+        return NextResponse.json({ message: "Success" }, { status: 200 });
+      } catch {
+        if (dataPaymentResult) {
+          (dataPaymentResult as PaymentStatusInterface).status =
+            "failed send email";
+          await db.collection("payment_status").doc().set(dataPaymentResult);
+        }
+
+        return NextResponse.json(
+          { message: "Failed to send email" },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({ message: "Success" }, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof Error) {
+      const paymentSnap = await db
+        .collection("payment_status")
+        .where("order_id", "==", order_id)
+        .get();
+      if (!paymentSnap.empty) {
+        const docRef = paymentSnap.docs[0].ref;
+        await docRef.update({
+          status: error.message,
+        });
+      }
       return NextResponse.json({ message: error.message }, { status: 500 });
     }
     return NextResponse.json(
